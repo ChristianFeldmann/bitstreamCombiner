@@ -10,5 +10,6 @@ namespace combiner
 {
 
 using ByteVector = std::vector<char>;
+using pairUint64 = std::pair<uint64_t, uint64_t>;
 
-}
+} // namespace combiner

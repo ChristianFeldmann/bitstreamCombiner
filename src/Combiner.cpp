@@ -6,6 +6,9 @@
 
 #include "Combiner.h"
 
+#include <HEVC/NalUnitHEVC.h>
+#include <common/SubByteReader.h>
+
 #include <iostream>
 
 namespace combiner
@@ -19,6 +22,7 @@ Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
 
 void Combiner::parseHeadersFromFiles()
 {
+  int nalID = 0;
   while (true)
   {
     int fileIndex = 0;
@@ -27,9 +31,17 @@ void Combiner::parseHeadersFromFiles()
       const auto nalData = file.getNextNALUnit();
       if (nalData.size() == 0)
         return;
-      std::cout << "File " << fileIndex++ << " NAL: " << nalData.size() << " ";
+
+      auto                  nalHEVC = std::make_shared<parser::hevc::NalUnitHEVC>(nalID);
+      parser::SubByteReader reader(nalData);
+      nalHEVC->header.parse(reader);
+
+      std::cout << "File " << fileIndex++ << " NAL "
+                << parser::hevc::NalTypeMapper.getName(nalHEVC->header.nal_unit_type) << " ";
     }
     std::cout << "\n";
+
+    nalID++;
   }
 }
 

@@ -19,10 +19,17 @@ Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
 
 void Combiner::parseHeadersFromFiles()
 {
-  for (auto &file : this->inputFiles)
+  while (true)
   {
-    const auto firstNAL = file.getNextNALUnit();
-    std::cout << "First NAL: " << firstNAL.size() << "\n";
+    int fileIndex = 0;
+    for (auto &file : this->inputFiles)
+    {
+      const auto nalData = file.getNextNALUnit();
+      if (nalData.size() == 0)
+        return;
+      std::cout << "File " << fileIndex++ << " NAL: " << nalData.size() << " ";
+    }
+    std::cout << "\n";
   }
 }
 

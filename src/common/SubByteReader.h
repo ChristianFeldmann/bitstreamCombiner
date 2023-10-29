@@ -69,8 +69,8 @@ public:
   uint64_t   readBits(size_t nrBits);
   ByteVector readBytes(size_t nrBytes);
 
-  uint64_t readUE_V();
-  int64_t  readSE_V();
+  uint64_t readUEV();
+  int64_t  readSEV();
   uint64_t readLEB128();
   uint64_t readUVLC();
   uint64_t readNS(uint64_t maxVal);

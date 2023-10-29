@@ -7,6 +7,7 @@
 #include "Combiner.h"
 
 #include <HEVC/NalUnitHEVC.h>
+#include <HEVC/video_parameter_set_rbsp.h>
 #include <common/SubByteReader.h>
 
 #include <iostream>
@@ -22,6 +23,8 @@ Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
 
 void Combiner::parseHeadersFromFiles()
 {
+  using namespace parser::hevc;
+
   int nalID = 0;
   while (true)
   {
@@ -32,12 +35,18 @@ void Combiner::parseHeadersFromFiles()
       if (nalData.size() == 0)
         return;
 
-      auto                  nalHEVC = std::make_shared<parser::hevc::NalUnitHEVC>(nalID);
+      auto                  nalHEVC = std::make_shared<NalUnitHEVC>(nalID);
       parser::SubByteReader reader(nalData);
       nalHEVC->header.parse(reader);
 
+      if (nalHEVC->header.nal_unit_type == NalType::VPS_NUT)
+      {
+        auto newVPS = std::make_shared<video_parameter_set_rbsp>();
+        newVPS->parse(reader);
+      }
+
       std::cout << "File " << fileIndex++ << " NAL "
-                << parser::hevc::NalTypeMapper.getName(nalHEVC->header.nal_unit_type) << " ";
+                << NalTypeMapper.getName(nalHEVC->header.nal_unit_type) << " ";
     }
     std::cout << "\n";
 

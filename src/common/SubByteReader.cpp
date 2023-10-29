@@ -137,7 +137,7 @@ ByteVector SubByteReader::readBytes(size_t nrBytes)
   return retVector;
 }
 
-uint64_t SubByteReader::readUE_V()
+uint64_t SubByteReader::readUEV()
 {
   {
     if (this->readBits(1) == 1)
@@ -160,9 +160,9 @@ uint64_t SubByteReader::readUE_V()
   return val;
 }
 
-int64_t SubByteReader::readSE_V()
+int64_t SubByteReader::readSEV()
 {
-  const auto val = this->readUE_V();
+  const auto val = this->readUEV();
   if (val % 2 == 0)
     return -int64_t((val + 1) / 2);
   else

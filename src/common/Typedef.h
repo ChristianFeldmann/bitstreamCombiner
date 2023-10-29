@@ -12,4 +12,6 @@ namespace combiner
 using ByteVector = std::vector<char>;
 using pairUint64 = std::pair<uint64_t, uint64_t>;
 
+template <typename T> using vector = std::vector<T>;
+
 } // namespace combiner

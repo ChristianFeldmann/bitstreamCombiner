@@ -26,14 +26,12 @@ public:
 class NalUnitHEVC
 {
 public:
-  NalUnitHEVC(int nalIdx) : nalIdx(nalIdx) {}
+  NalUnitHEVC() = default;
 
-  nal_unit_header          header;
-  std::shared_ptr<NalRBSP> rbsp;
+  nal_unit_header          header{};
+  std::shared_ptr<NalRBSP> rbsp{};
 
-  int nalIdx{};
-
-  ByteVector rawData;
+  ByteVector rawData{};
 };
 
 using NalMap = std::map<unsigned, std::shared_ptr<NalUnitHEVC>>;

@@ -8,6 +8,8 @@
 
 #include <stdexcept>
 
+#include "slice_segment_header.h"
+
 namespace combiner::parser::hevc
 {
 
@@ -144,6 +146,23 @@ void st_ref_pic_set::parse(SubByteReader &reader,
   }
 
   NumDeltaPocs[stRpsIdx] = NumNegativePics[stRpsIdx] + NumPositivePics[stRpsIdx]; // (7-69)
+}
+
+// (7-55)
+unsigned st_ref_pic_set::NumPicTotalCurr(const uint64_t              CurrRpsIdx,
+                                         const slice_segment_header *slice)
+{
+  int NumPicTotalCurr = 0;
+  for (unsigned int i = 0; i < NumNegativePics[CurrRpsIdx]; i++)
+    if (UsedByCurrPicS0[CurrRpsIdx][i])
+      NumPicTotalCurr++;
+  for (unsigned int i = 0; i < NumPositivePics[CurrRpsIdx]; i++)
+    if (UsedByCurrPicS1[CurrRpsIdx][i])
+      NumPicTotalCurr++;
+  for (unsigned int i = 0; i < slice->num_long_term_sps + slice->num_long_term_pics; i++)
+    if (slice->UsedByCurrPicLt[i])
+      NumPicTotalCurr++;
+  return NumPicTotalCurr;
 }
 
 } // namespace combiner::parser::hevc

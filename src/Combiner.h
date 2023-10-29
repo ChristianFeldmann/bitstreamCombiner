@@ -8,6 +8,7 @@
 
 #include <FileSourceAnnexB.h>
 #include <HEVC/NalUnitHEVC.h>
+#include <HEVC/ParserAnnexBHEVC.h>
 
 #include <vector>
 
@@ -21,13 +22,13 @@ public:
 
 private:
   void parseHeadersFromFiles();
-  void parseHeadersFromFile(const int fileIndex);
+  void combineFiles();
 
   std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> vpsPerFile;
   std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> spsPerFile;
   std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> ppsPerFile;
 
-  std::vector<combiner::FileSourceAnnexB> inputFiles;
+  std::vector<parser::hevc::ParserAnnexBHEVC> parsers;
 };
 
 } // namespace combiner

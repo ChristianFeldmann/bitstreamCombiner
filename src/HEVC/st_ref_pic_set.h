@@ -22,6 +22,8 @@ public:
   void
   parse(SubByteReader &reader, const uint64_t stRpsIdx, const uint64_t num_short_term_ref_pic_sets);
 
+  unsigned NumPicTotalCurr(const uint64_t CurrRpsIdx, const slice_segment_header *slice);
+
   bool         inter_ref_pic_set_prediction_flag{};
   uint64_t     delta_idx_minus1{};
   bool         delta_rps_sign{};

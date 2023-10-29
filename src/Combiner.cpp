@@ -14,14 +14,14 @@
 namespace combiner
 {
 
+using namespace parser::hevc;
+
 namespace
 {
 
 std::shared_ptr<parser::hevc::NalUnitHEVC> parseNextNalFromFile(combiner::FileSourceAnnexB &file,
                                                                 const int                   nalID)
 {
-  using namespace parser::hevc;
-
   const auto nalData = file.getNextNALUnit();
   if (nalData.size() == 0)
     return {};
@@ -34,8 +34,13 @@ std::shared_ptr<parser::hevc::NalUnitHEVC> parseNextNalFromFile(combiner::FileSo
   {
     auto newVPS = std::make_shared<video_parameter_set_rbsp>();
     newVPS->parse(reader);
-
     nalHEVC->rbsp = newVPS;
+  }
+  else if (nalHEVC->header.nal_unit_type == NalType::SPS_NUT)
+  {
+    auto newSPS = std::make_shared<seq_parameter_set_rbsp>();
+    newSPS->parse(reader);
+    nalHEVC->rbsp = newSPS;
   }
 
   return nalHEVC;
@@ -63,18 +68,26 @@ void Combiner::parseHeadersFromFile(const int fileIndex)
 
   int  nalID    = 0;
   bool foundVPS = false;
-
-  while (!foundVPS)
+  bool foundSPS = false;
+  while (!foundVPS || !foundSPS)
   {
     const auto nal = parseNextNalFromFile(file, nalID);
-    if (nal->header.nal_unit_type == parser::hevc::NalType::VPS_NUT)
+
+    switch (nal->header.nal_unit_type)
     {
+    case NalType::VPS_NUT:
       this->vpsPerFile[fileIndex] = nal;
       foundVPS                    = true;
+      break;
+    case NalType::SPS_NUT:
+      this->spsPerFile[fileIndex] = nal;
+      foundSPS                    = true;
+
+    default:
+      break;
     }
 
-    std::cout << "  Parsed " << parser::hevc::NalTypeMapper.getName(nal->header.nal_unit_type)
-              << "\n";
+    std::cout << "  Parsed " << NalTypeMapper.getName(nal->header.nal_unit_type) << "\n";
   }
 }
 

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <FileSourceAnnexB.h>
+#include <HEVC/seq_parameter_set_rbsp.h>
 #include <HEVC/video_parameter_set_rbsp.h>
 
 #include <vector>
@@ -24,6 +25,7 @@ private:
   void parseHeadersFromFile(const int fileIndex);
 
   std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> vpsPerFile;
+  std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> spsPerFile;
 
   std::vector<combiner::FileSourceAnnexB> inputFiles;
 };

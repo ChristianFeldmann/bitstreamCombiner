@@ -7,6 +7,9 @@
 #include "Combiner.h"
 
 #include <HEVC/NalUnitHEVC.h>
+#include <HEVC/pic_parameter_set_rbsp.h>
+#include <HEVC/seq_parameter_set_rbsp.h>
+#include <HEVC/video_parameter_set_rbsp.h>
 #include <common/SubByteReader.h>
 
 #include <iostream>
@@ -42,6 +45,12 @@ std::shared_ptr<parser::hevc::NalUnitHEVC> parseNextNalFromFile(combiner::FileSo
     newSPS->parse(reader);
     nalHEVC->rbsp = newSPS;
   }
+  else if (nalHEVC->header.nal_unit_type == NalType::PPS_NUT)
+  {
+    auto newPPS = std::make_shared<pic_parameter_set_rbsp>();
+    newPPS->parse(reader);
+    nalHEVC->rbsp = newPPS;
+  }
 
   return nalHEVC;
 }
@@ -56,6 +65,8 @@ Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
 
 void Combiner::parseHeadersFromFiles()
 {
+  std::cout << "Getting headers from files...\n";
+
   for (int fileIndex = 0; fileIndex < static_cast<int>(inputFiles.size()); ++fileIndex)
     this->parseHeadersFromFile(fileIndex);
 }
@@ -69,7 +80,8 @@ void Combiner::parseHeadersFromFile(const int fileIndex)
   int  nalID    = 0;
   bool foundVPS = false;
   bool foundSPS = false;
-  while (!foundVPS || !foundSPS)
+  bool foundPPS = false;
+  while (!foundVPS || !foundSPS || !foundPPS)
   {
     const auto nal = parseNextNalFromFile(file, nalID);
 
@@ -82,6 +94,11 @@ void Combiner::parseHeadersFromFile(const int fileIndex)
     case NalType::SPS_NUT:
       this->spsPerFile[fileIndex] = nal;
       foundSPS                    = true;
+      break;
+    case NalType::PPS_NUT:
+      this->ppsPerFile[fileIndex] = nal;
+      foundPPS                    = true;
+      break;
 
     default:
       break;

@@ -7,13 +7,41 @@
 #include "Combiner.h"
 
 #include <HEVC/NalUnitHEVC.h>
-#include <HEVC/video_parameter_set_rbsp.h>
 #include <common/SubByteReader.h>
 
 #include <iostream>
 
 namespace combiner
 {
+
+namespace
+{
+
+std::shared_ptr<parser::hevc::NalUnitHEVC> parseNextNalFromFile(combiner::FileSourceAnnexB &file,
+                                                                const int                   nalID)
+{
+  using namespace parser::hevc;
+
+  const auto nalData = file.getNextNALUnit();
+  if (nalData.size() == 0)
+    return {};
+
+  auto                  nalHEVC = std::make_shared<NalUnitHEVC>(nalID);
+  parser::SubByteReader reader(nalData);
+  nalHEVC->header.parse(reader);
+
+  if (nalHEVC->header.nal_unit_type == NalType::VPS_NUT)
+  {
+    auto newVPS = std::make_shared<video_parameter_set_rbsp>();
+    newVPS->parse(reader);
+
+    nalHEVC->rbsp = newVPS;
+  }
+
+  return nalHEVC;
+}
+
+} // namespace
 
 Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
     : inputFiles(std::move(inputFiles))
@@ -23,34 +51,30 @@ Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
 
 void Combiner::parseHeadersFromFiles()
 {
-  using namespace parser::hevc;
+  for (int fileIndex = 0; fileIndex < static_cast<int>(inputFiles.size()); ++fileIndex)
+    this->parseHeadersFromFile(fileIndex);
+}
 
-  int nalID = 0;
-  while (true)
+void Combiner::parseHeadersFromFile(const int fileIndex)
+{
+  auto &file = this->inputFiles[fileIndex];
+
+  std::cout << "File " << fileIndex << ":\n";
+
+  int  nalID    = 0;
+  bool foundVPS = false;
+
+  while (!foundVPS)
   {
-    int fileIndex = 0;
-    for (auto &file : this->inputFiles)
+    const auto nal = parseNextNalFromFile(file, nalID);
+    if (nal->header.nal_unit_type == parser::hevc::NalType::VPS_NUT)
     {
-      const auto nalData = file.getNextNALUnit();
-      if (nalData.size() == 0)
-        return;
-
-      auto                  nalHEVC = std::make_shared<NalUnitHEVC>(nalID);
-      parser::SubByteReader reader(nalData);
-      nalHEVC->header.parse(reader);
-
-      if (nalHEVC->header.nal_unit_type == NalType::VPS_NUT)
-      {
-        auto newVPS = std::make_shared<video_parameter_set_rbsp>();
-        newVPS->parse(reader);
-      }
-
-      std::cout << "File " << fileIndex++ << " NAL "
-                << NalTypeMapper.getName(nalHEVC->header.nal_unit_type) << " ";
+      this->vpsPerFile[fileIndex] = nal;
+      foundVPS                    = true;
     }
-    std::cout << "\n";
 
-    nalID++;
+    std::cout << "  Parsed " << parser::hevc::NalTypeMapper.getName(nal->header.nal_unit_type)
+              << "\n";
   }
 }
 

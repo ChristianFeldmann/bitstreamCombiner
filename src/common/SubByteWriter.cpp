@@ -50,23 +50,20 @@ void SubByteWriter::writeBits(const uint64_t value, const size_t nrBits)
 
 void SubByteWriter::writeUEV(const uint64_t value)
 {
-  if (value == 0)
-  {
-    this->writeFlag(true);
-    return;
-  }
+  const auto valuePlusOne = value + 1;
 
-  unsigned golLength    = 1;
-  auto     valueShifter = value + 1;
-
-  while (1 != valueShifter)
+  auto nrBits       = 0;
+  auto valueShifter = valuePlusOne;
+  while (valueShifter > 0)
   {
     valueShifter >>= 1;
-    golLength += 2;
+    nrBits++;
   }
 
-  this->writeBits(0, (golLength >> 1));
-  this->writeBits((value + 1), ((golLength + 1) >> 1));
+  const auto nrStartingZeroBits = nrBits - 1;
+
+  this->writeBits(0, nrStartingZeroBits);
+  this->writeBits(valuePlusOne, nrBits);
 }
 
 void SubByteWriter::writeSEV(const int64_t value)

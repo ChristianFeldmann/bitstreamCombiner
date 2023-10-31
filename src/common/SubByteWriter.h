@@ -18,7 +18,7 @@ class SubByteWriter
 public:
   SubByteWriter() = default;
 
-  [[nodiscard]] ByteVector finishWritingAddRbspAndGetData();
+  [[nodiscard]] ByteVector finishWritingAndGetData();
 
   void writeFlag(const bool flag);
   void writeBits(const uint64_t value, const size_t nrBits);
@@ -32,7 +32,7 @@ public:
 private:
   ByteVector byteVector;
 
-  bool skipEmulationPrevention{true};
+  bool writeEmulationPrevention{true};
 
   void writeCurrentByteToVector();
 

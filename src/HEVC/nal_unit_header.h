@@ -9,6 +9,7 @@
 #include <common/EnumMapper.h>
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 namespace combiner::parser::hevc
 {
@@ -154,14 +155,13 @@ public:
   nal_unit_header()  = default;
   ~nal_unit_header() = default;
   void parse(parser::SubByteReader &reader);
+  void write(parser::SubByteWriter &writer) const;
 
   bool isIRAP() const;
   bool isSLNR() const;
   bool isRADL() const;
   bool isRASL() const;
   bool isSlice() const;
-
-  bool forbiddenZeroBit{};
 
   unsigned nuh_layer_id;
   unsigned nuh_temporal_id_plus1;

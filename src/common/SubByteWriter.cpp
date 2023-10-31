@@ -11,6 +11,14 @@
 namespace combiner::parser
 {
 
+ByteVector SubByteWriter::finishWritingAndGetData()
+{
+  if (!this->byte_aligned())
+    this->writeCurrentByteToVector();
+
+  return this->byteVector;
+}
+
 void SubByteWriter::writeFlag(const bool flag)
 {
   this->currentByte.set(this->posInCurrentByte, flag);
@@ -58,7 +66,7 @@ void SubByteWriter::writeUEV(const uint64_t value)
   }
 
   this->writeBits(0, (golLength >> 1));
-  this->writeBits(value, ((golLength + 1) >> 1));
+  this->writeBits((value + 1), ((golLength + 1) >> 1));
 }
 
 void SubByteWriter::writeSEV(const int64_t value)
@@ -68,7 +76,22 @@ void SubByteWriter::writeSEV(const int64_t value)
 void SubByteWriter::writeCurrentByteToVector()
 {
   const auto byteValue = static_cast<char>(this->currentByte.to_ulong());
+
+  if (this->writeEmulationPrevention && this->numEmuPrevZeroBytes == 2 &&
+      (byteValue == (char)0 || byteValue == (char)1 || byteValue == (char)2 ||
+       byteValue == (char)3))
+  {
+    this->byteVector.push_back((char)3);
+    this->numEmuPrevZeroBytes = 0;
+  }
+
+  if (byteValue == (char)0)
+    this->numEmuPrevZeroBytes++;
+  else
+    this->numEmuPrevZeroBytes = 0;
+
   this->byteVector.push_back(byteValue);
+  this->currentByte.reset();
 }
 
 bool SubByteWriter::byte_aligned() const

@@ -103,12 +103,25 @@ parser::CodingEnum<NalType> nalTypeCoding(
 
 void nal_unit_header::parse(SubByteReader &reader)
 {
-  this->forbiddenZeroBit      = reader.readFlag();
+  const auto forbidden_zero_bit = reader.readFlag();
+  if (forbidden_zero_bit)
+    throw std::logic_error("Nal header forbidden_zero_bit must not be zero.");
+
   this->nalUnitTypeID         = static_cast<unsigned>(reader.readBits(6));
   this->nuh_layer_id          = static_cast<unsigned>(reader.readBits(6));
   this->nuh_temporal_id_plus1 = static_cast<unsigned>(reader.readBits(3));
 
   this->nal_unit_type = nalTypeCoding.getValue(this->nalUnitTypeID);
+}
+
+void nal_unit_header::write(parser::SubByteWriter &writer) const
+{
+  const auto forbidden_zero_bit = false;
+  writer.writeFlag(forbidden_zero_bit);
+
+  writer.writeBits(this->nalUnitTypeID, 6);
+  writer.writeBits(this->nuh_layer_id, 6);
+  writer.writeBits(this->nuh_temporal_id_plus1, 3);
 }
 
 bool nal_unit_header::isIRAP() const

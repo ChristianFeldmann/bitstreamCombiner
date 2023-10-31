@@ -8,7 +8,8 @@
 
 #include <HEVC/NalUnitHEVC.h>
 #include <HEVC/slice_segment_layer_rbsp.h>
-#include <common/SubByteReader.h>
+#include <HEVC/video_parameter_set_rbsp.h>
+#include <common/SubByteWriter.h>
 
 #include <iostream>
 
@@ -69,7 +70,19 @@ void Combiner::testPassThroughOfBitstream(FileSinkAnnexB &outputFile)
   auto &parser = this->parsers.at(0);
   while (const auto &nal = parser.parseNextNalFromFile())
   {
-    outputFile.writeNALUnit(nal->rawData);
+    if (nal->header.nal_unit_type == NalType::VPS_NUT)
+    {
+      auto vps = dynamic_cast<parser::hevc::video_parameter_set_rbsp *>(nal->rbsp.get());
+
+      parser::SubByteWriter writer;
+      nal->header.write(writer);
+      vps->write(writer);
+      const auto data = writer.finishWritingAndGetData();
+
+      outputFile.writeNALUnit(data);
+    }
+    else
+      outputFile.writeNALUnit(nal->rawData);
   }
 }
 

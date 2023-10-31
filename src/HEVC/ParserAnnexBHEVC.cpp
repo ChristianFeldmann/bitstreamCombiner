@@ -77,50 +77,50 @@ std::shared_ptr<NalUnitHEVC> ParserAnnexBHEVC::parseNextNalFromFile()
   if (nalData.size() == 0)
     return {};
 
-  auto                  nalHEVC = std::make_shared<NalUnitHEVC>();
+  auto                  nal = std::make_shared<NalUnitHEVC>(nalData);
   parser::SubByteReader reader(nalData);
-  nalHEVC->header.parse(reader);
+  nal->header.parse(reader);
 
-  if (nalHEVC->header.nal_unit_type == NalType::VPS_NUT)
+  if (nal->header.nal_unit_type == NalType::VPS_NUT)
   {
     auto newVPS = std::make_shared<video_parameter_set_rbsp>();
     newVPS->parse(reader);
-    nalHEVC->rbsp = newVPS;
+    nal->rbsp = newVPS;
 
     this->activeParameterSets.vpsMap[newVPS->vps_video_parameter_set_id] = newVPS;
   }
-  else if (nalHEVC->header.nal_unit_type == NalType::SPS_NUT)
+  else if (nal->header.nal_unit_type == NalType::SPS_NUT)
   {
     auto newSPS = std::make_shared<seq_parameter_set_rbsp>();
     newSPS->parse(reader);
-    nalHEVC->rbsp = newSPS;
+    nal->rbsp = newSPS;
 
     this->activeParameterSets.spsMap[newSPS->sps_seq_parameter_set_id] = newSPS;
   }
-  else if (nalHEVC->header.nal_unit_type == NalType::PPS_NUT)
+  else if (nal->header.nal_unit_type == NalType::PPS_NUT)
   {
     auto newPPS = std::make_shared<pic_parameter_set_rbsp>();
     newPPS->parse(reader);
-    nalHEVC->rbsp = newPPS;
+    nal->rbsp = newPPS;
 
     this->activeParameterSets.ppsMap[newPPS->pps_pic_parameter_set_id] = newPPS;
   }
-  if (nalHEVC->header.isSlice())
+  if (nal->header.isSlice())
   {
     auto newSlice = std::make_shared<slice_segment_layer_rbsp>();
     newSlice->parse(reader,
                     this->firstAUInDecodingOrder,
                     this->prevTid0PicSlicePicOrderCntLsb,
                     this->prevTid0PicPicOrderCntMsb,
-                    nalHEVC->header,
+                    nal->header,
                     this->activeParameterSets.spsMap,
                     this->activeParameterSets.ppsMap,
                     this->lastFirstSliceSegmentInPic);
-    nalHEVC->rbsp = newSlice;
+    nal->rbsp = newSlice;
 
     this->firstAUInDecodingOrder = false;
-    auto TemporalId              = nalHEVC->header.nuh_temporal_id_plus1 - 1;
-    if (TemporalId == 0 && !nalHEVC->header.isRASL() && !nalHEVC->header.isRADL())
+    auto TemporalId              = nal->header.nuh_temporal_id_plus1 - 1;
+    if (TemporalId == 0 && !nal->header.isRASL() && !nal->header.isRADL())
     {
       // Let prevTid0Pic be the previous picture in decoding order that has TemporalId
       // equal to 0 and that is not a RASL picture, a RADL picture or an SLNR picture.
@@ -132,7 +132,7 @@ std::shared_ptr<NalUnitHEVC> ParserAnnexBHEVC::parseNextNalFromFile()
       this->lastFirstSliceSegmentInPic = newSlice;
   }
 
-  return nalHEVC;
+  return nal;
 }
 
 } // namespace combiner::parser::hevc

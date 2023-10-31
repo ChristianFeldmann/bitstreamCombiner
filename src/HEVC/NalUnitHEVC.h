@@ -27,6 +27,7 @@ class NalUnitHEVC
 {
 public:
   NalUnitHEVC() = default;
+  NalUnitHEVC(const ByteVector &rawData) : rawData(rawData) {}
 
   nal_unit_header          header{};
   std::shared_ptr<NalRBSP> rbsp{};

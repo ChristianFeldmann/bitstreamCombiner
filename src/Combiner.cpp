@@ -22,8 +22,11 @@ Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
   for (auto &file : inputFiles)
     this->parsers.emplace_back(std::move(file));
 
-  this->parseHeadersFromFiles();
-  this->combineFiles();
+  FileSinkAnnexB outputFile("debugOutputFile.hevc");
+  this->testPassThroughOfBitstream(outputFile);
+
+  // this->parseHeadersFromFiles();
+  // this->combineFiles();
 }
 
 void Combiner::parseHeadersFromFiles()
@@ -58,6 +61,15 @@ void Combiner::combineFiles()
       throw std::runtime_error("Unable to cast slice");
 
     std::cout << "Combine POC " << firstFileSlice->sliceSegmentHeader.PicOrderCntVal << "\n";
+  }
+}
+
+void Combiner::testPassThroughOfBitstream(FileSinkAnnexB &outputFile)
+{
+  auto &parser = this->parsers.at(0);
+  while (const auto &nal = parser.parseNextNalFromFile())
+  {
+    outputFile.writeNALUnit(nal->rawData);
   }
 }
 

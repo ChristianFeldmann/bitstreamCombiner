@@ -19,7 +19,7 @@ class FileSourceAnnexB
 {
 public:
   FileSourceAnnexB() = default;
-  FileSourceAnnexB(const std::filesystem::path &path);
+  FileSourceAnnexB(const std::filesystem::path &filePath);
 
   // Get the raw data of the NAL unit without the start code
   ByteVector getNextNALUnit();

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <FileSinkAnnexB.h>
 #include <FileSourceAnnexB.h>
 #include <HEVC/NalUnitHEVC.h>
 #include <HEVC/ParserAnnexBHEVC.h>
@@ -23,6 +24,8 @@ public:
 private:
   void parseHeadersFromFiles();
   void combineFiles();
+
+  void testPassThroughOfBitstream(FileSinkAnnexB &outputFile);
 
   std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> vpsPerFile;
   std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> spsPerFile;

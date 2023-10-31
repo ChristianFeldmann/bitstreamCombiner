@@ -8,10 +8,10 @@
 
 #include <stdexcept>
 
-namespace combiner::parser::hevc
+namespace combiner::parser::hevc::rbsp_trailing_bits
 {
 
-void rbsp_trailing_bits::parse(SubByteReader &reader)
+void parse(SubByteReader &reader)
 {
   const auto rbsp_stop_one_bit = reader.readFlag();
   if (!rbsp_stop_one_bit)
@@ -25,4 +25,16 @@ void rbsp_trailing_bits::parse(SubByteReader &reader)
   }
 }
 
-} // namespace combiner::parser::hevc
+void write(SubByteWriter &writer)
+{
+  const auto rbsp_stop_one_bit = true;
+  writer.writeFlag(rbsp_stop_one_bit);
+
+  while (!writer.byte_aligned())
+  {
+    const auto rbsp_alignment_zero_bit = false;
+    writer.writeFlag(rbsp_alignment_zero_bit);
+  }
+}
+
+} // namespace combiner::parser::hevc::rbsp_trailing_bits

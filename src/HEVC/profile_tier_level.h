@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 namespace combiner::parser::hevc
 {
@@ -18,6 +19,9 @@ public:
 
   void
   parse(SubByteReader &reader, const bool profilePresentFlag, const uint64_t maxNumSubLayersMinus1);
+  void write(SubByteWriter &writer,
+             const bool     profilePresentFlag,
+             const uint64_t maxNumSubLayersMinus1) const;
 
   uint64_t general_profile_space{};
   bool     general_tier_flag{};
@@ -62,7 +66,6 @@ public:
   bool     sub_layer_one_picture_only_constraint_flag[8]{};
   bool     sub_layer_lower_bit_rate_constraint_flag[8]{};
   bool     sub_layer_inbld_flag[8]{};
-  bool     sub_layer_reserved_zero_bit[8]{};
   uint64_t sub_layer_level_idc[8]{};
 };
 

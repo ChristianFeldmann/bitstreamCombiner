@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 #include "sub_layer_hrd_parameters.h"
 
@@ -22,6 +23,10 @@ public:
   void parse(SubByteReader &reader,
              const bool     commonInfPresentFlag,
              const uint64_t maxNumSubLayersMinus1);
+
+  void write(SubByteWriter &writer,
+             const bool     commonInfPresentFlag,
+             const uint64_t maxNumSubLayersMinus1) const;
 
   bool nal_hrd_parameters_present_flag{};
   bool vcl_hrd_parameters_present_flag{};

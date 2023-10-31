@@ -74,4 +74,30 @@ void sub_layer_hrd_parameters::parse(SubByteReader &reader,
   }
 }
 
+void sub_layer_hrd_parameters::write(SubByteWriter &writer,
+                                     const uint64_t CpbCnt,
+                                     const bool     sub_pic_hrd_params_present_flag,
+                                     const bool     SubPicHrdFlag,
+                                     const uint64_t bit_rate_scale,
+                                     const uint64_t cpb_size_scale,
+                                     const uint64_t cpb_size_du_scale) const
+{
+  if (CpbCnt >= 32)
+    throw std::logic_error("The value of CpbCnt must be in the range of 0 to 31");
+
+  for (int i = 0; i <= CpbCnt; i++)
+  {
+    writer.writeUEV(this->bit_rate_value_minus1.at(i));
+    writer.writeUEV(this->cpb_size_value_minus1.at(i));
+
+    if (sub_pic_hrd_params_present_flag)
+    {
+      writer.writeUEV(this->cpb_size_du_value_minus1.at(i));
+
+      writer.writeUEV(this->bit_rate_du_value_minus1.at(i));
+    }
+    writer.writeFlag(this->cbr_flag.at(i));
+  }
+}
+
 } // namespace combiner::parser::hevc

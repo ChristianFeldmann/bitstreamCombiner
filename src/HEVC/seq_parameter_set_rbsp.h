@@ -87,8 +87,6 @@ public:
   bool     sps_3d_extension_flag{};
   uint64_t sps_extension_5bits{};
 
-  rbsp_trailing_bits rbspTrailingBits;
-
   // 7.4.3.2.1
   uint64_t ChromaArrayType{};
   uint64_t SubWidthC, SubHeightC{};

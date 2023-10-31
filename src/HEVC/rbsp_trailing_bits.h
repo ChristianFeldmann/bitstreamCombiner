@@ -7,16 +7,12 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
-namespace combiner::parser::hevc
+namespace combiner::parser::hevc::rbsp_trailing_bits
 {
 
-class rbsp_trailing_bits
-{
-public:
-  rbsp_trailing_bits()  = default;
-  ~rbsp_trailing_bits() = default;
-  void parse(SubByteReader &reader);
-};
+void parse(SubByteReader &reader);
+void write(SubByteWriter &writer);
 
-} // namespace combiner::parser::hevc
+} // namespace combiner::parser::hevc::rbsp_trailing_bits

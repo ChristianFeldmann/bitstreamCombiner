@@ -7,11 +7,11 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 #include "NalUnitHEVC.h"
 #include "hrd_parameters.h"
 #include "profile_tier_level.h"
-#include "rbsp_trailing_bits.h"
 
 namespace combiner::parser::hevc
 {
@@ -23,6 +23,7 @@ public:
   video_parameter_set_rbsp() {}
 
   void parse(SubByteReader &reader);
+  void write(SubByteWriter &writer) const;
 
   uint64_t vps_video_parameter_set_id{};
   bool     vps_base_layer_internal_flag{};
@@ -30,7 +31,6 @@ public:
   uint64_t vps_max_layers_minus1{};
   uint64_t vps_max_sub_layers_minus1{};
   bool     vps_temporal_id_nesting_flag{};
-  uint64_t vps_reserved_0xffff_16bits{};
 
   profile_tier_level profileTierLevel;
 
@@ -53,8 +53,6 @@ public:
 
   vector<hrd_parameters> vps_hrd_parameters;
   bool                   vps_extension_flag{};
-
-  rbsp_trailing_bits rbspTrailingBits;
 
   // Calculated values
   double frameRate{};

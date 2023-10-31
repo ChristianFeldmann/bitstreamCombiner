@@ -15,6 +15,9 @@ void hrd_parameters::parse(SubByteReader &reader,
                            const bool     commonInfPresentFlag,
                            const uint64_t maxNumSubLayersMinus1)
 {
+  if (maxNumSubLayersMinus1 >= 8)
+    throw std::logic_error("The value of maxNumSubLayersMinus1 must be in the range of 0 to 7");
+
   if (commonInfPresentFlag)
   {
     this->nal_hrd_parameters_present_flag = reader.readFlag();
@@ -41,9 +44,6 @@ void hrd_parameters::parse(SubByteReader &reader,
   }
 
   this->SubPicHrdFlag = (this->SubPicHrdPreferredFlag && this->sub_pic_hrd_params_present_flag);
-
-  if (maxNumSubLayersMinus1 >= 8)
-    throw std::logic_error("The value of maxNumSubLayersMinus1 must be in the range of 0 to 7");
 
   for (unsigned i = 0; i <= maxNumSubLayersMinus1; i++)
   {
@@ -72,13 +72,78 @@ void hrd_parameters::parse(SubByteReader &reader,
                                  this->cpb_size_scale,
                                  this->cpb_size_du_scale);
     if (this->vcl_hrd_parameters_present_flag)
-      vcl_sub_hrd[i].parse(reader,
-                           this->cpb_cnt_minus1[i],
-                           this->sub_pic_hrd_params_present_flag,
-                           SubPicHrdFlag,
-                           this->bit_rate_scale,
-                           this->cpb_size_scale,
-                           this->cpb_size_du_scale);
+      this->vcl_sub_hrd[i].parse(reader,
+                                 this->cpb_cnt_minus1[i],
+                                 this->sub_pic_hrd_params_present_flag,
+                                 SubPicHrdFlag,
+                                 this->bit_rate_scale,
+                                 this->cpb_size_scale,
+                                 this->cpb_size_du_scale);
+  }
+}
+
+void hrd_parameters::write(SubByteWriter &writer,
+                           const bool     commonInfPresentFlag,
+                           const uint64_t maxNumSubLayersMinus1) const
+{
+  if (maxNumSubLayersMinus1 >= 8)
+    throw std::logic_error("The value of maxNumSubLayersMinus1 must be in the range of 0 to 7");
+
+  if (commonInfPresentFlag)
+  {
+    writer.writeFlag(this->nal_hrd_parameters_present_flag);
+    writer.writeFlag(this->vcl_hrd_parameters_present_flag);
+
+    if (this->nal_hrd_parameters_present_flag || this->vcl_hrd_parameters_present_flag)
+    {
+      writer.writeFlag(this->sub_pic_hrd_params_present_flag);
+      if (this->sub_pic_hrd_params_present_flag)
+      {
+        writer.writeBits(this->tick_divisor_minus2, 8);
+        writer.writeBits(this->du_cpb_removal_delay_increment_length_minus1, 5);
+        writer.writeFlag(this->sub_pic_cpb_params_in_pic_timing_sei_flag);
+        writer.writeBits(this->dpb_output_delay_du_length_minus1, 5);
+      }
+      writer.writeBits(this->bit_rate_scale, 4);
+      writer.writeBits(this->cpb_size_scale, 4);
+      if (this->sub_pic_hrd_params_present_flag)
+        writer.writeBits(this->cpb_size_du_scale, 4);
+      writer.writeBits(this->initial_cpb_removal_delay_length_minus1, 5);
+      writer.writeBits(this->au_cpb_removal_delay_length_minus1, 5);
+      writer.writeBits(this->dpb_output_delay_length_minus1, 5);
+    }
+  }
+
+  for (unsigned i = 0; i <= maxNumSubLayersMinus1; i++)
+  {
+    writer.writeFlag(this->fixed_pic_rate_general_flag[i]);
+    if (!this->fixed_pic_rate_general_flag[i])
+      writer.writeFlag(this->fixed_pic_rate_within_cvs_flag[i]);
+    if (this->fixed_pic_rate_within_cvs_flag[i])
+    {
+      writer.writeUEV(this->elemental_duration_in_tc_minus1[i]);
+    }
+    else
+      writer.writeFlag(this->low_delay_hrd_flag[i]);
+    if (!this->low_delay_hrd_flag[i])
+      writer.writeUEV(this->cpb_cnt_minus1[i]);
+
+    if (this->nal_hrd_parameters_present_flag)
+      this->nal_sub_hrd[i].write(writer,
+                                 this->cpb_cnt_minus1[i],
+                                 this->sub_pic_hrd_params_present_flag,
+                                 SubPicHrdFlag,
+                                 this->bit_rate_scale,
+                                 this->cpb_size_scale,
+                                 this->cpb_size_du_scale);
+    if (this->vcl_hrd_parameters_present_flag)
+      this->vcl_sub_hrd[i].write(writer,
+                                 this->cpb_cnt_minus1[i],
+                                 this->sub_pic_hrd_params_present_flag,
+                                 SubPicHrdFlag,
+                                 this->bit_rate_scale,
+                                 this->cpb_size_scale,
+                                 this->cpb_size_du_scale);
   }
 }
 

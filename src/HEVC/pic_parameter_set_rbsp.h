@@ -69,8 +69,6 @@ public:
   uint64_t          pps_extension_5bits{};
 
   pps_range_extension ppsRangeExtension;
-
-  rbsp_trailing_bits rbspTrailingBits;
 };
 
 } // namespace combiner::parser::hevc

@@ -118,7 +118,7 @@ void pic_parameter_set_rbsp::parse(SubByteReader &reader)
     throw std::runtime_error("Not implemented yet");
 
   // There is more to parse but we are not interested in this information (for now)
-  this->rbspTrailingBits.parse(reader);
+  rbsp_trailing_bits::parse(reader);
 }
 
 } // namespace combiner::parser::hevc

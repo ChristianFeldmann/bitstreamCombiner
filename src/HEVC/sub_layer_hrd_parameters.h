@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 #include <common/Typedef.h>
 
 namespace combiner::parser::hevc
@@ -25,6 +26,14 @@ public:
              const uint64_t bit_rate_scale,
              const uint64_t cpb_size_scale,
              const uint64_t cpb_size_du_scale);
+
+  void write(SubByteWriter &writer,
+             const uint64_t CpbCnt,
+             const bool     sub_pic_hrd_params_present_flag,
+             const bool     SubPicHrdFlag,
+             const uint64_t bit_rate_scale,
+             const uint64_t cpb_size_scale,
+             const uint64_t cpb_size_du_scale) const;
 
   vector<uint64_t> bit_rate_value_minus1;
   vector<uint64_t> cpb_size_value_minus1;

@@ -1,18 +1,22 @@
 cmake_minimum_required(VERSION 3.14)
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 project(bitstreamCombiner)
 
-FILE(GLOB_RECURSE SOURCE_FILES src/*.cpp)
-FILE(GLOB_RECURSE HEADER_FILES src/*.h)
+option(ENABLE_TEST "Enable build of Tests" OFF)
 
-add_executable(bitstreamCombiner ${SOURCE_FILES} ${HEADER_FILES})
+add_subdirectory(src)
 
-target_include_directories(bitstreamCombiner PRIVATE ${CMAKE_SOURCE_DIR}/src)
-
-set_target_properties(bitstreamCombiner PROPERTIES OUTPUT_NAME bitstreamCombiner)
+if(ENABLE_TEST)
+    message(STATUS "Enable building of unit tests")
+    enable_testing()
+    add_subdirectory(test/unit)
+else()
+    message(STATUS "Not building unit tests")
+endif()

@@ -7,6 +7,7 @@
 #include "Combiner.h"
 
 #include <HEVC/NalUnitHEVC.h>
+#include <HEVC/seq_parameter_set_rbsp.h>
 #include <HEVC/slice_segment_layer_rbsp.h>
 #include <HEVC/video_parameter_set_rbsp.h>
 #include <common/SubByteWriter.h>
@@ -77,6 +78,17 @@ void Combiner::testPassThroughOfBitstream(FileSinkAnnexB &outputFile)
       parser::SubByteWriter writer;
       nal->header.write(writer);
       vps->write(writer);
+      const auto data = writer.finishWritingAndGetData();
+
+      outputFile.writeNALUnit(data);
+    }
+    else if (nal->header.nal_unit_type == NalType::SPS_NUT)
+    {
+      auto sps = dynamic_cast<parser::hevc::seq_parameter_set_rbsp *>(nal->rbsp.get());
+
+      parser::SubByteWriter writer;
+      nal->header.write(writer);
+      sps->write(writer);
       const auto data = writer.finishWritingAndGetData();
 
       outputFile.writeNALUnit(data);

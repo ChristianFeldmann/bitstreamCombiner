@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 #include "NalUnitHEVC.h"
 #include "profile_tier_level.h"
@@ -24,6 +25,7 @@ public:
   seq_parameter_set_rbsp() {}
 
   void parse(SubByteReader &reader);
+  void write(SubByteWriter &writer) const;
 
   uint64_t           sps_video_parameter_set_id{};
   uint64_t           sps_max_sub_layers_minus1{};

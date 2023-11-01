@@ -128,7 +128,7 @@ void st_ref_pic_set::parse(SubByteReader &reader,
                                   static_cast<int>(this->delta_poc_s0_minus1.back() + 1); // (7-67)
       UsedByCurrPicS0[stRpsIdx][i] = used_by_curr_pic_s0_flag[i];
     }
-    for (unsigned i = 0; i < num_positive_pics; i++)
+    for (unsigned i = 0; i < this->num_positive_pics; i++)
     {
       this->delta_poc_s1_minus1.push_back(reader.readUEV());
       this->used_by_curr_pic_s1_flag.push_back(reader.readFlag());
@@ -146,6 +146,51 @@ void st_ref_pic_set::parse(SubByteReader &reader,
   }
 
   NumDeltaPocs[stRpsIdx] = NumNegativePics[stRpsIdx] + NumPositivePics[stRpsIdx]; // (7-69)
+}
+
+void st_ref_pic_set::write(SubByteWriter &writer,
+                           const uint64_t stRpsIdx,
+                           const uint64_t num_short_term_ref_pic_sets) const
+{
+  if (stRpsIdx > 64)
+    throw std::logic_error(
+        "Error while writing short term ref pic set. The stRpsIdx must be in the range [0..64].");
+
+  if (stRpsIdx != 0)
+    writer.writeFlag(this->inter_ref_pic_set_prediction_flag);
+
+  if (this->inter_ref_pic_set_prediction_flag)
+  {
+    if (stRpsIdx == num_short_term_ref_pic_sets)
+      writer.writeUEV(this->delta_idx_minus1);
+    writer.writeFlag(this->delta_rps_sign);
+    writer.writeUEV(this->abs_delta_rps_minus1);
+
+    const auto RefRpsIdx =
+        stRpsIdx - (this->delta_idx_minus1 + 1); // Rec. ITU-T H.265 v3 (04/2015) (7-57)
+
+    for (uint64_t j = 0; j <= NumDeltaPocs[RefRpsIdx]; j++)
+    {
+      writer.writeFlag(this->used_by_curr_pic_flag.at(j));
+      if (!this->used_by_curr_pic_flag.at(j))
+        writer.writeFlag(this->use_delta_flag.at(j));
+    }
+  }
+  else
+  {
+    writer.writeUEV(this->num_negative_pics);
+    writer.writeUEV(this->num_positive_pics);
+    for (unsigned i = 0; i < this->num_negative_pics; i++)
+    {
+      writer.writeUEV(this->delta_poc_s0_minus1.at(i));
+      writer.writeFlag(this->used_by_curr_pic_s0_flag.at(i));
+    }
+    for (unsigned i = 0; i < num_positive_pics; i++)
+    {
+      writer.writeUEV(this->delta_poc_s1_minus1.at(i));
+      writer.writeFlag(this->used_by_curr_pic_s1_flag.at(i));
+    }
+  }
 }
 
 // (7-55)

@@ -33,6 +33,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 namespace combiner::parser::hevc
 {
@@ -44,10 +45,12 @@ public:
   scaling_list_data() {}
 
   void parse(SubByteReader &reader);
+  void write(SubByteWriter &writer) const;
 
   bool     scaling_list_pred_mode_flag[4][6]{};
   uint64_t scaling_list_pred_matrix_id_delta[4][6]{};
   int64_t  scaling_list_dc_coef_minus8[2][6]{};
+  int64_t  scaling_list_delta_coef[2][6]{};
 };
 
 } // namespace combiner::parser::hevc

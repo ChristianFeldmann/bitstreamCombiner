@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 #include "hrd_parameters.h"
 
@@ -19,6 +20,7 @@ public:
   vui_parameters() {}
 
   void parse(SubByteReader &reader, const uint64_t sps_max_sub_layers_minus1);
+  void write(SubByteWriter &writer, const uint64_t sps_max_sub_layers_minus1) const;
 
   bool     aspect_ratio_info_present_flag{};
   uint64_t aspect_ratio_idc{};

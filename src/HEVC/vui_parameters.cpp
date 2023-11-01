@@ -91,4 +91,84 @@ void vui_parameters::parse(SubByteReader &reader, const uint64_t sps_max_sub_lay
   }
 }
 
+void vui_parameters::write(SubByteWriter &writer, const uint64_t sps_max_sub_layers_minus1) const
+{
+  writer.writeFlag(this->aspect_ratio_info_present_flag);
+  if (this->aspect_ratio_info_present_flag)
+  {
+    writer.writeBits(this->aspect_ratio_idc, 8);
+    if (this->aspect_ratio_idc == 255) // EXTENDED_SAR=255
+    {
+      writer.writeBits(this->sar_width, 16);
+      writer.writeBits(this->sar_height, 16);
+    }
+  }
+
+  writer.writeFlag(this->overscan_info_present_flag);
+  if (this->overscan_info_present_flag)
+    writer.writeFlag(this->overscan_appropriate_flag);
+
+  writer.writeFlag(this->video_signal_type_present_flag);
+  if (video_signal_type_present_flag)
+  {
+    writer.writeBits(this->video_format, 3);
+    writer.writeFlag(this->video_full_range_flag);
+
+    writer.writeFlag(this->colour_description_present_flag);
+    if (this->colour_description_present_flag)
+    {
+      writer.writeBits(this->colour_primaries, 8);
+      writer.writeBits(this->transfer_characteristics, 8);
+      writer.writeBits(this->matrix_coeffs, 8);
+    }
+  }
+
+  writer.writeFlag(this->chroma_loc_info_present_flag);
+  if (this->chroma_loc_info_present_flag)
+  {
+    writer.writeUEV(this->chroma_sample_loc_type_top_field);
+    writer.writeUEV(this->chroma_sample_loc_type_bottom_field);
+  }
+
+  writer.writeFlag(this->neutral_chroma_indication_flag);
+  writer.writeFlag(this->field_seq_flag);
+  writer.writeFlag(this->frame_field_info_present_flag);
+  writer.writeFlag(this->default_display_window_flag);
+  if (this->default_display_window_flag)
+  {
+    writer.writeUEV(this->def_disp_win_left_offset);
+    writer.writeUEV(this->def_disp_win_right_offset);
+    writer.writeUEV(this->def_disp_win_top_offset);
+    writer.writeUEV(this->def_disp_win_bottom_offset);
+  }
+
+  writer.writeFlag(this->vui_timing_info_present_flag);
+  if (this->vui_timing_info_present_flag)
+  {
+    // The VUI has timing information for us
+    writer.writeBits(this->vui_num_units_in_tick, 32);
+    writer.writeBits(this->vui_time_scale, 32);
+
+    writer.writeFlag(this->vui_poc_proportional_to_timing_flag);
+    if (this->vui_poc_proportional_to_timing_flag)
+      writer.writeUEV(this->vui_num_ticks_poc_diff_one_minus1);
+    writer.writeFlag(this->vui_hrd_parameters_present_flag);
+    if (this->vui_hrd_parameters_present_flag)
+      this->hrdParameters.write(writer, 1, sps_max_sub_layers_minus1);
+  }
+
+  writer.writeFlag(this->bitstream_restriction_flag);
+  if (this->bitstream_restriction_flag)
+  {
+    writer.writeFlag(this->tiles_fixed_structure_flag);
+    writer.writeFlag(this->motion_vectors_over_pic_boundaries_flag);
+    writer.writeFlag(this->restricted_ref_pic_lists_flag);
+    writer.writeUEV(this->min_spatial_segmentation_idc);
+    writer.writeUEV(this->max_bytes_per_pic_denom);
+    writer.writeUEV(this->max_bits_per_min_cu_denom);
+    writer.writeUEV(this->log2_max_mv_length_horizontal);
+    writer.writeUEV(this->log2_max_mv_length_vertical);
+  }
+}
+
 } // namespace combiner::parser::hevc

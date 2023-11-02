@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include <HEVC/pic_parameter_set_rbsp.h>
 #include <HEVC/seq_parameter_set_rbsp.h>
 #include <HEVC/video_parameter_set_rbsp.h>
 #include <common/SubByteReader.h>
@@ -193,6 +194,56 @@ TEST(ParameterSet, TestReadingAndWriting_SPS)
 
   EXPECT_EQ(rawSPSTestData.size(), writtenData.size());
   EXPECT_TRUE(std::equal(rawSPSTestData.begin(), rawSPSTestData.end(), writtenData.begin()));
+}
+
+TEST(ParameterSet, TestReadingAndWriting_PPS)
+{
+  const ByteVector rawPPSTestData = {0xC0, 0xAC, 0x93, 0x83, 0xC9};
+
+  parser::SubByteReader reader(rawPPSTestData);
+
+  parser::hevc::pic_parameter_set_rbsp pps;
+  pps.parse(reader);
+
+  EXPECT_EQ(pps.pps_pic_parameter_set_id, 0);
+  EXPECT_EQ(pps.pps_seq_parameter_set_id, 0);
+  EXPECT_EQ(pps.dependent_slice_segments_enabled_flag, false);
+  EXPECT_EQ(pps.output_flag_present_flag, false);
+  EXPECT_EQ(pps.num_extra_slice_header_bits, 0);
+  EXPECT_EQ(pps.sign_data_hiding_enabled_flag, false);
+  EXPECT_EQ(pps.cabac_init_present_flag, true);
+  EXPECT_EQ(pps.num_ref_idx_l0_default_active_minus1, 1);
+  EXPECT_EQ(pps.num_ref_idx_l1_default_active_minus1, 0);
+  EXPECT_EQ(pps.init_qp_minus26, 0);
+  EXPECT_EQ(pps.constrained_intra_pred_flag, 0);
+  EXPECT_EQ(pps.transform_skip_enabled_flag, false);
+  EXPECT_EQ(pps.cu_qp_delta_enabled_flag, true);
+  EXPECT_EQ(pps.diff_cu_qp_delta_depth, 3);
+  EXPECT_EQ(pps.pps_cb_qp_offset, 0);
+  EXPECT_EQ(pps.pps_cr_qp_offset, 0);
+  EXPECT_EQ(pps.pps_slice_chroma_qp_offsets_present_flag, true);
+  EXPECT_EQ(pps.weighted_pred_flag, false);
+  EXPECT_EQ(pps.weighted_bipred_flag, false);
+  EXPECT_EQ(pps.transquant_bypass_enabled_flag, false);
+  EXPECT_EQ(pps.tiles_enabled_flag, false);
+  EXPECT_EQ(pps.entropy_coding_sync_enabled_flag, false);
+  EXPECT_EQ(pps.pps_loop_filter_across_slices_enabled_flag, true);
+  EXPECT_EQ(pps.deblocking_filter_control_present_flag, true);
+  EXPECT_EQ(pps.deblocking_filter_override_enabled_flag, true);
+  EXPECT_EQ(pps.pps_deblocking_filter_disabled_flag, true);
+  EXPECT_EQ(pps.pps_scaling_list_data_present_flag, false);
+  EXPECT_EQ(pps.lists_modification_present_flag, false);
+  EXPECT_EQ(pps.log2_parallel_merge_level_minus2, 0);
+  EXPECT_EQ(pps.slice_segment_header_extension_present_flag, false);
+  EXPECT_EQ(pps.pps_extension_present_flag, false);
+
+  parser::SubByteWriter writer;
+  pps.write(writer);
+
+  const auto writtenData = writer.finishWritingAndGetData();
+
+  EXPECT_EQ(rawPPSTestData.size(), writtenData.size());
+  EXPECT_TRUE(std::equal(rawPPSTestData.begin(), rawPPSTestData.end(), writtenData.begin()));
 }
 
 } // namespace combiner

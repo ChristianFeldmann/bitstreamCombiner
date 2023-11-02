@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 namespace combiner::parser::hevc
 {
@@ -17,6 +18,7 @@ public:
   pps_range_extension() {}
 
   void parse(SubByteReader &reader, const bool transform_skip_enabled_flag);
+  void write(SubByteWriter &writer, const bool transform_skip_enabled_flag) const;
 
   uint64_t        log2_max_transform_skip_block_size_minus2{};
   bool            cross_component_prediction_enabled_flag{};

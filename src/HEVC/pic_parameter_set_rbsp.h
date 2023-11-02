@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 #include "NalUnitHEVC.h"
 #include "pps_range_extension.h"
@@ -22,6 +23,7 @@ public:
   pic_parameter_set_rbsp() {}
 
   void parse(SubByteReader &reader);
+  void write(SubByteWriter &writer) const;
 
   uint64_t          pps_pic_parameter_set_id{};
   uint64_t          pps_seq_parameter_set_id{};

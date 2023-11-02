@@ -55,4 +55,24 @@ void pps_range_extension::parse(SubByteReader &reader, const bool transform_skip
   this->log2_sao_offset_scale_chroma = reader.readUEV();
 }
 
+void pps_range_extension::write(SubByteWriter &writer, const bool transform_skip_enabled_flag) const
+{
+  if (transform_skip_enabled_flag)
+    writer.writeUEV(this->log2_max_transform_skip_block_size_minus2);
+  writer.writeFlag(this->cross_component_prediction_enabled_flag);
+  writer.writeFlag(this->chroma_qp_offset_list_enabled_flag);
+  if (this->chroma_qp_offset_list_enabled_flag)
+  {
+    writer.writeUEV(this->diff_cu_chroma_qp_offset_depth);
+    writer.writeUEV(this->chroma_qp_offset_list_len_minus1);
+    for (unsigned i = 0; i <= this->chroma_qp_offset_list_len_minus1; i++)
+    {
+      writer.writeSEV(this->cb_qp_offset_list.at(i));
+      writer.writeSEV(this->cr_qp_offset_list.at(i));
+    }
+  }
+  writer.writeUEV(this->log2_sao_offset_scale_luma);
+  writer.writeUEV(this->log2_sao_offset_scale_chroma);
+}
+
 } // namespace combiner::parser::hevc

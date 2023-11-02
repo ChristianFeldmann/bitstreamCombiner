@@ -68,6 +68,12 @@ void SubByteWriter::writeUEV(const uint64_t value)
 
 void SubByteWriter::writeSEV(const int64_t value)
 {
+  if (value < 0)
+    this->writeUEV(std::abs(value * 2));
+  else if (value > 0)
+    this->writeUEV(value * 2 - 1);
+  else
+    this->writeUEV(0);
 }
 
 void SubByteWriter::writeCurrentByteToVector()

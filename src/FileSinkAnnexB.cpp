@@ -26,7 +26,7 @@ void FileSinkAnnexB::writeNALUnit(const ByteVector &nalData)
   this->outputFile.put(0);
   this->outputFile.put(0);
   this->outputFile.put(1);
-  this->outputFile.write(nalData.data(), nalData.size());
+  this->outputFile.write(reinterpret_cast<const char *>(nalData.data()), nalData.size());
 }
 
 } // namespace combiner

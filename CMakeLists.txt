@@ -12,6 +12,7 @@ project(bitstreamCombiner)
 option(ENABLE_TEST "Enable build of Tests" OFF)
 
 add_subdirectory(src)
+add_subdirectory(app)
 
 if(ENABLE_TEST)
     message(STATUS "Enable building of unit tests")

@@ -51,7 +51,7 @@ void FileSourceAnnexB::seekToFirstNAL()
 
 void FileSourceAnnexB::readNextBuffer()
 {
-  this->inputFile.read(this->fileBuffer.data(), BUFFERSIZE);
+  this->inputFile.read(reinterpret_cast<char *>(this->fileBuffer.data()), BUFFERSIZE);
   const auto bytesRead     = this->inputFile.gcount();
   this->fileBufferPosition = this->fileBuffer.begin();
   this->fileBufferEnd      = this->fileBuffer.begin() + bytesRead;

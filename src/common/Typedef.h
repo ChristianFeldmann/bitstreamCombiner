@@ -17,7 +17,8 @@ using pairUint64 = std::pair<uint64_t, uint64_t>;
 template <typename T> using vector  = std::vector<T>;
 template <typename T> using umap_1d = std::map<unsigned, T>;
 
-template <std::size_t N> using boolArray                  = std::array<bool, N>;
-template <std::size_t N, std::size_t M> using boolArray2D = std::array<std::array<bool, M>, N>;
+template <std::size_t N> using boolArray                          = std::array<bool, N>;
+template <typename T, std::size_t N, std::size_t M> using array2D = std::array<std::array<T, M>, N>;
+template <std::size_t N, std::size_t M> using boolArray2D         = array2D<bool, N, M>;
 
 } // namespace combiner

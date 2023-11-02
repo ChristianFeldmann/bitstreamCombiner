@@ -43,13 +43,13 @@ public:
   vector<bool>     used_by_curr_pic_s1_flag;
 
   // Calculated values. These are static. They are used for reference picture set prediction.
-  static uint64_t NumNegativePics[65];
-  static uint64_t NumPositivePics[65];
-  static int      DeltaPocS0[65][16];
-  static int      DeltaPocS1[65][16];
-  static bool     UsedByCurrPicS0[65][16];
-  static bool     UsedByCurrPicS1[65][16];
-  static uint64_t NumDeltaPocs[65];
+  static std::array<uint64_t, 65> NumNegativePics;
+  static std::array<uint64_t, 65> NumPositivePics;
+  static array2D<int, 65, 16>     DeltaPocS0;
+  static array2D<int, 65, 16>     DeltaPocS1;
+  static array2D<bool, 65, 16>    UsedByCurrPicS0;
+  static array2D<bool, 65, 16>    UsedByCurrPicS1;
+  static std::array<uint64_t, 65> NumDeltaPocs;
 };
 
 } // namespace combiner::parser::hevc

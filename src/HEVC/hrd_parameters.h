@@ -47,14 +47,14 @@ public:
   bool SubPicHrdPreferredFlag{};
   bool SubPicHrdFlag{};
 
-  bool     fixed_pic_rate_general_flag[8]{};
-  bool     fixed_pic_rate_within_cvs_flag[8]{};
-  uint64_t elemental_duration_in_tc_minus1[8]{};
-  bool     low_delay_hrd_flag[8]{};
-  uint64_t cpb_cnt_minus1[8]{};
+  boolArray<8>            fixed_pic_rate_general_flag{};
+  boolArray<8>            fixed_pic_rate_within_cvs_flag{};
+  std::array<uint64_t, 8> elemental_duration_in_tc_minus1{};
+  boolArray<8>            low_delay_hrd_flag{};
+  std::array<uint64_t, 8> cpb_cnt_minus1{};
 
-  sub_layer_hrd_parameters nal_sub_hrd[8];
-  sub_layer_hrd_parameters vcl_sub_hrd[8];
+  std::array<sub_layer_hrd_parameters, 8> nal_sub_hrd;
+  std::array<sub_layer_hrd_parameters, 8> vcl_sub_hrd;
 };
 
 } // namespace combiner::parser::hevc

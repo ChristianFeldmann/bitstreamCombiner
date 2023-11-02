@@ -128,9 +128,10 @@ void profile_tier_level::parse(SubByteReader &reader,
       }
 
       if ((this->sub_layer_profile_idc[i] >= 1 && this->sub_layer_profile_idc[i] <= 5) ||
-          sub_layer_profile_compatibility_flag[1] || sub_layer_profile_compatibility_flag[2] ||
-          sub_layer_profile_compatibility_flag[3] || sub_layer_profile_compatibility_flag[4] ||
-          sub_layer_profile_compatibility_flag[5])
+          sub_layer_profile_compatibility_flag[i][1] ||
+          sub_layer_profile_compatibility_flag[i][2] ||
+          sub_layer_profile_compatibility_flag[i][3] ||
+          sub_layer_profile_compatibility_flag[i][4] || sub_layer_profile_compatibility_flag[i][5])
         this->sub_layer_inbld_flag[i] = reader.readFlag();
       else
       {
@@ -257,9 +258,10 @@ void profile_tier_level::write(SubByteWriter &writer,
       }
 
       if ((this->sub_layer_profile_idc[i] >= 1 && this->sub_layer_profile_idc[i] <= 5) ||
-          sub_layer_profile_compatibility_flag[1] || sub_layer_profile_compatibility_flag[2] ||
-          sub_layer_profile_compatibility_flag[3] || sub_layer_profile_compatibility_flag[4] ||
-          sub_layer_profile_compatibility_flag[5])
+          sub_layer_profile_compatibility_flag[i][1] ||
+          sub_layer_profile_compatibility_flag[i][2] ||
+          sub_layer_profile_compatibility_flag[i][3] ||
+          sub_layer_profile_compatibility_flag[i][4] || sub_layer_profile_compatibility_flag[i][5])
         writer.writeFlag(this->sub_layer_inbld_flag[i]);
       else
       {

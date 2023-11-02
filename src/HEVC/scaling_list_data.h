@@ -47,10 +47,10 @@ public:
   void parse(SubByteReader &reader);
   void write(SubByteWriter &writer) const;
 
-  bool     scaling_list_pred_mode_flag[4][6]{};
-  uint64_t scaling_list_pred_matrix_id_delta[4][6]{};
-  int64_t  scaling_list_dc_coef_minus8[2][6]{};
-  int64_t  scaling_list_delta_coef[2][6]{};
+  boolArray2D<4, 6>       scaling_list_pred_mode_flag{};
+  array2D<uint64_t, 4, 6> scaling_list_pred_matrix_id_delta{};
+  array2D<int64_t, 2, 6>  scaling_list_dc_coef_minus8{};
+  array2D<int64_t, 2, 6>  scaling_list_delta_coef{};
 };
 
 } // namespace combiner::parser::hevc

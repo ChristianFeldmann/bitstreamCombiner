@@ -46,27 +46,27 @@ public:
   uint64_t general_level_idc{};
 
   // A maximum of 8 sub-layer are allowed
-  bool     sub_layer_profile_present_flag[8]{};
-  bool     sub_layer_level_present_flag[8]{};
-  uint64_t sub_layer_profile_space[8]{};
-  bool     sub_layer_tier_flag[8]{};
-  uint64_t sub_layer_profile_idc[8]{};
-  bool     sub_layer_profile_compatibility_flag[8][32]{{}};
-  bool     sub_layer_progressive_source_flag[8]{};
-  bool     sub_layer_interlaced_source_flag[8]{};
-  bool     sub_layer_non_packed_constraint_flag[8]{};
-  bool     sub_layer_frame_only_constraint_flag[8]{};
-  bool     sub_layer_max_12bit_constraint_flag[8]{};
-  bool     sub_layer_max_10bit_constraint_flag[8]{};
-  bool     sub_layer_max_8bit_constraint_flag[8]{};
-  bool     sub_layer_max_422chroma_constraint_flag[8]{};
-  bool     sub_layer_max_420chroma_constraint_flag[8]{};
-  bool     sub_layer_max_monochrome_constraint_flag[8]{};
-  bool     sub_layer_intra_constraint_flag[8]{};
-  bool     sub_layer_one_picture_only_constraint_flag[8]{};
-  bool     sub_layer_lower_bit_rate_constraint_flag[8]{};
-  bool     sub_layer_inbld_flag[8]{};
-  uint64_t sub_layer_level_idc[8]{};
+  boolArray<8>            sub_layer_profile_present_flag{};
+  boolArray<8>            sub_layer_level_present_flag{};
+  std::array<uint64_t, 8> sub_layer_profile_space{};
+  boolArray<8>            sub_layer_tier_flag{};
+  std::array<uint64_t, 8> sub_layer_profile_idc{};
+  boolArray2D<8, 32>      sub_layer_profile_compatibility_flag{{}};
+  boolArray<8>            sub_layer_progressive_source_flag{};
+  boolArray<8>            sub_layer_interlaced_source_flag{};
+  boolArray<8>            sub_layer_non_packed_constraint_flag{};
+  boolArray<8>            sub_layer_frame_only_constraint_flag{};
+  boolArray<8>            sub_layer_max_12bit_constraint_flag{};
+  boolArray<8>            sub_layer_max_10bit_constraint_flag{};
+  boolArray<8>            sub_layer_max_8bit_constraint_flag{};
+  boolArray<8>            sub_layer_max_422chroma_constraint_flag{};
+  boolArray<8>            sub_layer_max_420chroma_constraint_flag{};
+  boolArray<8>            sub_layer_max_monochrome_constraint_flag{};
+  boolArray<8>            sub_layer_intra_constraint_flag{};
+  boolArray<8>            sub_layer_one_picture_only_constraint_flag{};
+  boolArray<8>            sub_layer_lower_bit_rate_constraint_flag{};
+  boolArray<8>            sub_layer_inbld_flag{};
+  std::array<uint64_t, 8> sub_layer_level_idc{};
 };
 
 } // namespace combiner::parser::hevc

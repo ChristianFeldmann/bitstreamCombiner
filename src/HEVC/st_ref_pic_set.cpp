@@ -13,13 +13,13 @@
 namespace combiner::parser::hevc
 {
 
-uint64_t st_ref_pic_set::st_ref_pic_set::NumNegativePics[65]{};
-uint64_t st_ref_pic_set::st_ref_pic_set::NumPositivePics[65]{};
-int      st_ref_pic_set::st_ref_pic_set::DeltaPocS0[65][16]{};
-int      st_ref_pic_set::st_ref_pic_set::DeltaPocS1[65][16]{};
-bool     st_ref_pic_set::st_ref_pic_set::UsedByCurrPicS0[65][16]{};
-bool     st_ref_pic_set::st_ref_pic_set::UsedByCurrPicS1[65][16]{};
-uint64_t st_ref_pic_set::st_ref_pic_set::NumDeltaPocs[65]{};
+std::array<uint64_t, 65> st_ref_pic_set::st_ref_pic_set::NumNegativePics{};
+std::array<uint64_t, 65> st_ref_pic_set::st_ref_pic_set::NumPositivePics{};
+array2D<int, 65, 16>     st_ref_pic_set::st_ref_pic_set::DeltaPocS0{};
+array2D<int, 65, 16>     st_ref_pic_set::st_ref_pic_set::DeltaPocS1{};
+array2D<bool, 65, 16>    st_ref_pic_set::st_ref_pic_set::UsedByCurrPicS0{};
+array2D<bool, 65, 16>    st_ref_pic_set::st_ref_pic_set::UsedByCurrPicS1{};
+std::array<uint64_t, 65> st_ref_pic_set::st_ref_pic_set::NumDeltaPocs{};
 
 void st_ref_pic_set::parse(SubByteReader &reader,
                            const uint64_t stRpsIdx,

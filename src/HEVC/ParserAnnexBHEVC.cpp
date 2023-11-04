@@ -83,40 +83,39 @@ std::shared_ptr<NalUnitHEVC> ParserAnnexBHEVC::parseNextNalFromFile()
 
   if (nal->header.nal_unit_type == NalType::VPS_NUT)
   {
-    auto newVPS = std::make_shared<video_parameter_set_rbsp>();
-    newVPS->parse(reader);
-    nal->rbsp = newVPS;
+    video_parameter_set_rbsp vps;
+    vps.parse(reader);
+    nal->rbsp = std::make_unique<video_parameter_set_rbsp>(vps);
 
-    this->activeParameterSets.vpsMap[newVPS->vps_video_parameter_set_id] = newVPS;
+    this->activeParameterSets.vpsMap[vps.vps_video_parameter_set_id] = vps;
   }
   else if (nal->header.nal_unit_type == NalType::SPS_NUT)
   {
-    auto newSPS = std::make_shared<seq_parameter_set_rbsp>();
-    newSPS->parse(reader);
-    nal->rbsp = newSPS;
+    seq_parameter_set_rbsp sps;
+    sps.parse(reader);
+    nal->rbsp = std::make_unique<seq_parameter_set_rbsp>(sps);
 
-    this->activeParameterSets.spsMap[newSPS->sps_seq_parameter_set_id] = newSPS;
+    this->activeParameterSets.spsMap[sps.sps_seq_parameter_set_id] = sps;
   }
   else if (nal->header.nal_unit_type == NalType::PPS_NUT)
   {
-    auto newPPS = std::make_shared<pic_parameter_set_rbsp>();
-    newPPS->parse(reader);
-    nal->rbsp = newPPS;
+    pic_parameter_set_rbsp pps;
+    pps.parse(reader);
+    nal->rbsp = std::make_unique<pic_parameter_set_rbsp>(pps);
 
-    this->activeParameterSets.ppsMap[newPPS->pps_pic_parameter_set_id] = newPPS;
+    this->activeParameterSets.ppsMap[pps.pps_pic_parameter_set_id] = pps;
   }
   if (nal->header.isSlice())
   {
-    auto newSlice = std::make_shared<slice_segment_layer_rbsp>();
-    newSlice->parse(reader,
-                    this->firstAUInDecodingOrder,
-                    this->prevTid0PicSlicePicOrderCntLsb,
-                    this->prevTid0PicPicOrderCntMsb,
-                    nal->header,
-                    this->activeParameterSets.spsMap,
-                    this->activeParameterSets.ppsMap,
-                    this->lastFirstSliceSegmentInPic);
-    nal->rbsp = newSlice;
+    slice_segment_layer_rbsp slice;
+    slice.parse(reader,
+                this->firstAUInDecodingOrder,
+                this->prevTid0PicSlicePicOrderCntLsb,
+                this->prevTid0PicPicOrderCntMsb,
+                nal->header,
+                this->activeParameterSets.spsMap,
+                this->activeParameterSets.ppsMap,
+                this->firstSliceInSegmentPicOrderCntLsb);
 
     this->firstAUInDecodingOrder = false;
     auto TemporalId              = nal->header.nuh_temporal_id_plus1 - 1;
@@ -125,11 +124,13 @@ std::shared_ptr<NalUnitHEVC> ParserAnnexBHEVC::parseNextNalFromFile()
       // Let prevTid0Pic be the previous picture in decoding order that has TemporalId
       // equal to 0 and that is not a RASL picture, a RADL picture or an SLNR picture.
       // Set these for the next slice
-      this->prevTid0PicSlicePicOrderCntLsb = newSlice->sliceSegmentHeader.slice_pic_order_cnt_lsb;
-      this->prevTid0PicPicOrderCntMsb      = newSlice->sliceSegmentHeader.PicOrderCntMsb;
+      this->prevTid0PicSlicePicOrderCntLsb = slice.sliceSegmentHeader.slice_pic_order_cnt_lsb;
+      this->prevTid0PicPicOrderCntMsb      = slice.sliceSegmentHeader.PicOrderCntMsb;
     }
-    if (newSlice->sliceSegmentHeader.first_slice_segment_in_pic_flag)
-      this->lastFirstSliceSegmentInPic = newSlice;
+    if (slice.sliceSegmentHeader.first_slice_segment_in_pic_flag)
+      this->firstSliceInSegmentPicOrderCntLsb = slice.sliceSegmentHeader.slice_pic_order_cnt_lsb;
+
+    nal->rbsp = std::make_unique<slice_segment_layer_rbsp>(slice);
   }
 
   return nal;

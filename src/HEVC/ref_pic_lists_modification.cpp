@@ -35,4 +35,26 @@ void ref_pic_lists_modification::parse(SubByteReader &             reader,
   }
 }
 
+void ref_pic_lists_modification::write(SubByteWriter &             writer,
+                                       const uint64_t              NumPicTotalCurr,
+                                       const slice_segment_header *slice) const
+{
+  const auto nrBits = static_cast<int>(std::ceil(std::log2(NumPicTotalCurr)));
+
+  writer.writeFlag(this->ref_pic_list_modification_flag_l0);
+  if (this->ref_pic_list_modification_flag_l0)
+  {
+    for (unsigned int i = 0; i <= slice->num_ref_idx_l0_active_minus1; i++)
+      writer.writeBits(this->list_entry_l0.at(i), nrBits);
+  }
+
+  if (slice->slice_type == SliceType::B)
+  {
+    writer.writeFlag(this->ref_pic_list_modification_flag_l1);
+    if (ref_pic_list_modification_flag_l1)
+      for (unsigned int i = 0; i <= slice->num_ref_idx_l1_active_minus1; i++)
+        writer.writeBits(this->list_entry_l1.at(i), nrBits);
+  }
+}
+
 } // namespace combiner::parser::hevc

@@ -26,7 +26,7 @@ public:
              const uint64_t stRpsIdx,
              const uint64_t num_short_term_ref_pic_sets) const;
 
-  unsigned NumPicTotalCurr(const uint64_t CurrRpsIdx, const slice_segment_header *slice);
+  unsigned NumPicTotalCurr(const uint64_t CurrRpsIdx, const slice_segment_header *slice) const;
 
   bool         inter_ref_pic_set_prediction_flag{};
   uint64_t     delta_idx_minus1{};

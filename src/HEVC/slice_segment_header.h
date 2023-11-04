@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 #include <common/Typedef.h>
 
 #include "commonMaps.h"
@@ -35,14 +36,22 @@ class slice_segment_header
 public:
   slice_segment_header() {}
 
-  void parse(SubByteReader &                           reader,
-             const bool                                firstAUInDecodingOrder,
-             const uint64_t                            prevTid0PicSlicePicOrderCntLsb,
-             const int                                 prevTid0PicPicOrderCntMsb,
-             const nal_unit_header &                   nalUnitHeader,
-             const SPSMap &                            spsMap,
-             const PPSMap &                            ppsMap,
-             std::shared_ptr<slice_segment_layer_rbsp> firstSliceInSegment);
+  void parse(SubByteReader &               reader,
+             const bool                    firstAUInDecodingOrder,
+             const uint64_t                prevTid0PicSlicePicOrderCntLsb,
+             const int                     prevTid0PicPicOrderCntMsb,
+             const nal_unit_header &       nalUnitHeader,
+             const SPSMap &                spsMap,
+             const PPSMap &                ppsMap,
+             const std::optional<uint64_t> firstSliceInSegmentPicOrderCntLsb);
+
+  void write(SubByteWriter &        writer,
+             const bool             firstAUInDecodingOrder,
+             const uint64_t         prevTid0PicSlicePicOrderCntLsb,
+             const int              prevTid0PicPicOrderCntMsb,
+             const nal_unit_header &nalUnitHeader,
+             const SPSMap &         spsMap,
+             const PPSMap &         ppsMap) const;
 
   bool              first_slice_segment_in_pic_flag{};
   bool              no_output_of_prior_pics_flag{};

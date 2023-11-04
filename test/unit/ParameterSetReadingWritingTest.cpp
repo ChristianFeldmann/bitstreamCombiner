@@ -6,12 +6,12 @@
 
 #include <gtest/gtest.h>
 
-#include <HEVC/pic_parameter_set_rbsp.h>
-#include <HEVC/seq_parameter_set_rbsp.h>
-#include <HEVC/video_parameter_set_rbsp.h>
 #include <common/SubByteReader.h>
 #include <common/SubByteWriter.h>
 #include <common/Typedef.h>
+
+#include "Functions.h"
+#include "TestFileData.h"
 
 namespace combiner
 {
@@ -32,15 +32,7 @@ bool checkForSetFlags(const std::array<bool, N> &flagArray, std::initializer_lis
 
 TEST(ParameterSet, TestReadingAndWriting_VPS)
 {
-  const ByteVector rawVPSTestData = {0x0C, 0x01, 0xFF, 0xFF, 0x01, 0x60, 0x00, 0x00,
-                                     0x03, 0x00, 0xB0, 0x00, 0x00, 0x03, 0x00, 0x00,
-                                     0x03, 0x00, 0x5A, 0x11, 0x40, 0xC0, 0x00, 0x00,
-                                     0x03, 0x00, 0x40, 0x00, 0x00, 0x07, 0xBA};
-
-  parser::SubByteReader reader(rawVPSTestData);
-
-  parser::hevc::video_parameter_set_rbsp vps;
-  vps.parse(reader);
+  const auto vps = parserParameterSetFromData<parser::hevc::video_parameter_set_rbsp>(RAW_VPS_DATA);
 
   EXPECT_EQ(vps.vps_video_parameter_set_id, 0);
   EXPECT_EQ(vps.vps_base_layer_internal_flag, true);
@@ -74,27 +66,12 @@ TEST(ParameterSet, TestReadingAndWriting_VPS)
   EXPECT_EQ(vps.vps_num_hrd_parameters, 0);
   EXPECT_EQ(vps.vps_extension_flag, false);
 
-  parser::SubByteWriter writer;
-  vps.write(writer);
-
-  const auto writtenData = writer.finishWritingAndGetData();
-
-  EXPECT_EQ(rawVPSTestData.size(), writtenData.size());
-  EXPECT_TRUE(std::equal(rawVPSTestData.begin(), rawVPSTestData.end(), writtenData.begin()));
+  writeParameterSetAndCompareToReference(vps, RAW_VPS_DATA);
 }
 
 TEST(ParameterSet, TestReadingAndWriting_SPS)
 {
-  const ByteVector rawSPSTestData = {
-      0x01, 0x01, 0x60, 0x00, 0x00, 0x03, 0x00, 0xB0, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03,
-      0x00, 0x5A, 0xA0, 0x07, 0x82, 0x00, 0x88, 0x7D, 0xE5, 0x11, 0x64, 0x91, 0x4A, 0x70,
-      0x16, 0xA0, 0x20, 0x20, 0x22, 0x80, 0x00, 0x00, 0x03, 0x00, 0x80, 0x00, 0x00, 0x0F,
-      0x78, 0x25, 0x7B, 0x9F, 0x80, 0x02, 0x49, 0xF0, 0x00, 0x36, 0xEE, 0xC8};
-
-  parser::SubByteReader reader(rawSPSTestData);
-
-  parser::hevc::seq_parameter_set_rbsp sps;
-  sps.parse(reader);
+  const auto sps = parserParameterSetFromData<parser::hevc::seq_parameter_set_rbsp>(RAW_SPS_DATA);
 
   EXPECT_EQ(sps.sps_video_parameter_set_id, 0);
   EXPECT_EQ(sps.sps_max_sub_layers_minus1, 0);
@@ -187,23 +164,12 @@ TEST(ParameterSet, TestReadingAndWriting_SPS)
 
   EXPECT_EQ(sps.sps_extension_present_flag, false);
 
-  parser::SubByteWriter writer;
-  sps.write(writer);
-
-  const auto writtenData = writer.finishWritingAndGetData();
-
-  EXPECT_EQ(rawSPSTestData.size(), writtenData.size());
-  EXPECT_TRUE(std::equal(rawSPSTestData.begin(), rawSPSTestData.end(), writtenData.begin()));
+  writeParameterSetAndCompareToReference(sps, RAW_SPS_DATA);
 }
 
 TEST(ParameterSet, TestReadingAndWriting_PPS)
 {
-  const ByteVector rawPPSTestData = {0xC0, 0xAC, 0x93, 0x83, 0xC9};
-
-  parser::SubByteReader reader(rawPPSTestData);
-
-  parser::hevc::pic_parameter_set_rbsp pps;
-  pps.parse(reader);
+  const auto pps = parserParameterSetFromData<parser::hevc::pic_parameter_set_rbsp>(RAW_PPS_DATA);
 
   EXPECT_EQ(pps.pps_pic_parameter_set_id, 0);
   EXPECT_EQ(pps.pps_seq_parameter_set_id, 0);
@@ -237,13 +203,7 @@ TEST(ParameterSet, TestReadingAndWriting_PPS)
   EXPECT_EQ(pps.slice_segment_header_extension_present_flag, false);
   EXPECT_EQ(pps.pps_extension_present_flag, false);
 
-  parser::SubByteWriter writer;
-  pps.write(writer);
-
-  const auto writtenData = writer.finishWritingAndGetData();
-
-  EXPECT_EQ(rawPPSTestData.size(), writtenData.size());
-  EXPECT_TRUE(std::equal(rawPPSTestData.begin(), rawPPSTestData.end(), writtenData.begin()));
+  writeParameterSetAndCompareToReference(pps, RAW_PPS_DATA);
 }
 
 } // namespace combiner

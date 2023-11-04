@@ -126,7 +126,7 @@ void st_ref_pic_set::parse(SubByteReader &reader,
       else
         DeltaPocS0[stRpsIdx][i] = DeltaPocS0[stRpsIdx][i - 1] -
                                   static_cast<int>(this->delta_poc_s0_minus1.back() + 1); // (7-67)
-      UsedByCurrPicS0[stRpsIdx][i] = used_by_curr_pic_s0_flag[i];
+      UsedByCurrPicS0[stRpsIdx][i] = this->used_by_curr_pic_s0_flag[i];
     }
     for (unsigned i = 0; i < this->num_positive_pics; i++)
     {
@@ -195,7 +195,7 @@ void st_ref_pic_set::write(SubByteWriter &writer,
 
 // (7-55)
 unsigned st_ref_pic_set::NumPicTotalCurr(const uint64_t              CurrRpsIdx,
-                                         const slice_segment_header *slice)
+                                         const slice_segment_header *slice) const
 {
   int NumPicTotalCurr = 0;
   for (unsigned int i = 0; i < NumNegativePics[CurrRpsIdx]; i++)

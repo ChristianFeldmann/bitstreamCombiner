@@ -11,6 +11,7 @@
 #include "slice_segment_layer_rbsp.h"
 
 #include <FileSourceAnnexB.h>
+#include <optional>
 
 namespace combiner::parser::hevc
 {
@@ -39,10 +40,7 @@ private:
   uint64_t prevTid0PicSlicePicOrderCntLsb{};
   int      prevTid0PicPicOrderCntMsb{};
 
-  // We keept a pointer to the last slice with first_slice_segment_in_pic_flag set.
-  // All following slices with dependent_slice_segment_flag set need this slice to infer some
-  // values.
-  std::shared_ptr<hevc::slice_segment_layer_rbsp> lastFirstSliceSegmentInPic;
+  std::optional<uint64_t> firstSliceInSegmentPicOrderCntLsb{};
 };
 
 } // namespace combiner::parser::hevc

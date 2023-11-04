@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 #include <memory>
 
@@ -22,9 +23,12 @@ class pred_weight_table
 public:
   pred_weight_table() {}
 
-  void parse(SubByteReader &                         reader,
-             std::shared_ptr<seq_parameter_set_rbsp> sps,
-             const slice_segment_header *            slice);
+  void parse(SubByteReader &               reader,
+             const seq_parameter_set_rbsp &sps,
+             const slice_segment_header *  slice);
+  void write(SubByteWriter &               writer,
+             const seq_parameter_set_rbsp &sps,
+             const slice_segment_header *  slice) const;
 
   uint64_t        luma_log2_weight_denom{};
   int64_t         delta_chroma_log2_weight_denom{};

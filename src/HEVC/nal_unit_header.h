@@ -152,7 +152,8 @@ const EnumMapper<NalType> NalTypeMapper({{NalType::TRAIL_N, "TRAIL_N"},
 class nal_unit_header
 {
 public:
-  nal_unit_header()  = default;
+  nal_unit_header() = default;
+  nal_unit_header(const NalType nal_unit_type) : nal_unit_type(nal_unit_type) {}
   ~nal_unit_header() = default;
   void parse(parser::SubByteReader &reader);
   void write(parser::SubByteWriter &writer) const;

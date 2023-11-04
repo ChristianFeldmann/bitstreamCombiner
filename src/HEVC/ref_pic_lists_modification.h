@@ -7,6 +7,7 @@
 #pragma once
 
 #include <common/SubByteReader.h>
+#include <common/SubByteWriter.h>
 
 namespace combiner::parser::hevc
 {
@@ -20,6 +21,8 @@ public:
 
   void
   parse(SubByteReader &reader, const uint64_t NumPicTotalCurr, const slice_segment_header *slice);
+  void
+  write(SubByteWriter &writer, const uint64_t NumPicTotalCurr, const slice_segment_header *slice) const;
 
   bool             ref_pic_list_modification_flag_l0{};
   vector<uint64_t> list_entry_l0;

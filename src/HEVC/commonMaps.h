@@ -32,6 +32,10 @@
 
 #pragma once
 
+#include "pic_parameter_set_rbsp.h"
+#include "seq_parameter_set_rbsp.h"
+#include "video_parameter_set_rbsp.h"
+
 #include <map>
 #include <memory>
 
@@ -42,8 +46,8 @@ class video_parameter_set_rbsp;
 class seq_parameter_set_rbsp;
 class pic_parameter_set_rbsp;
 
-using VPSMap = std::map<uint64_t, std::shared_ptr<hevc::video_parameter_set_rbsp>>;
-using SPSMap = std::map<uint64_t, std::shared_ptr<hevc::seq_parameter_set_rbsp>>;
-using PPSMap = std::map<uint64_t, std::shared_ptr<hevc::pic_parameter_set_rbsp>>;
+using VPSMap = std::map<uint64_t, hevc::video_parameter_set_rbsp>;
+using SPSMap = std::map<uint64_t, hevc::seq_parameter_set_rbsp>;
+using PPSMap = std::map<uint64_t, hevc::pic_parameter_set_rbsp>;
 
 } // namespace combiner::parser::hevc

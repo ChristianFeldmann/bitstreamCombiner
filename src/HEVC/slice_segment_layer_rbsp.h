@@ -21,14 +21,41 @@ class slice_segment_layer_rbsp : public NalRBSP
 public:
   slice_segment_layer_rbsp() {}
 
-  void parse(SubByteReader &                           reader,
-             const bool                                firstAUInDecodingOrder,
-             const uint64_t                            prevTid0PicSlicePicOrderCntLsb,
-             const int                                 prevTid0PicPicOrderCntMsb,
-             const nal_unit_header &                   nalUnitHeader,
-             const SPSMap &                            spsMap,
-             const PPSMap &                            ppsMap,
-             std::shared_ptr<slice_segment_layer_rbsp> firstSliceInSegment);
+  void parse(SubByteReader &               reader,
+             const bool                    firstAUInDecodingOrder,
+             const uint64_t                prevTid0PicSlicePicOrderCntLsb,
+             const int                     prevTid0PicPicOrderCntMsb,
+             const nal_unit_header &       nalUnitHeader,
+             const SPSMap &                spsMap,
+             const PPSMap &                ppsMap,
+             const std::optional<uint64_t> firstSliceInSegmentPicOrderCntLsb)
+  {
+    this->sliceSegmentHeader.parse(reader,
+                                   firstAUInDecodingOrder,
+                                   prevTid0PicSlicePicOrderCntLsb,
+                                   prevTid0PicPicOrderCntMsb,
+                                   nalUnitHeader,
+                                   spsMap,
+                                   ppsMap,
+                                   firstSliceInSegmentPicOrderCntLsb);
+  }
+
+  void write(SubByteWriter &        writer,
+             const bool             firstAUInDecodingOrder,
+             const uint64_t         prevTid0PicSlicePicOrderCntLsb,
+             const int              prevTid0PicPicOrderCntMsb,
+             const nal_unit_header &nalUnitHeader,
+             const SPSMap &         spsMap,
+             const PPSMap &         ppsMap) const
+  {
+    this->sliceSegmentHeader.write(writer,
+                                   firstAUInDecodingOrder,
+                                   prevTid0PicSlicePicOrderCntLsb,
+                                   prevTid0PicPicOrderCntMsb,
+                                   nalUnitHeader,
+                                   spsMap,
+                                   ppsMap);
+  }
 
   slice_segment_header sliceSegmentHeader;
 };

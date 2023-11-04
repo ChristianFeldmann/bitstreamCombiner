@@ -27,9 +27,9 @@ private:
 
   void testPassThroughOfBitstream(FileSinkAnnexB &outputFile);
 
-  std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> vpsPerFile;
-  std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> spsPerFile;
-  std::map<int, std::shared_ptr<parser::hevc::NalUnitHEVC>> ppsPerFile;
+  std::map<int, parser::hevc::NalUnitHEVC> vpsPerFile;
+  std::map<int, parser::hevc::NalUnitHEVC> spsPerFile;
+  std::map<int, parser::hevc::NalUnitHEVC> ppsPerFile;
 
   std::vector<parser::hevc::ParserAnnexBHEVC> parsers;
 };

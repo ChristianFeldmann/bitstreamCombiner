@@ -22,16 +22,15 @@ public:
   Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles);
 
 private:
-  void parseHeadersFromFiles();
   void combineFiles();
-
-  void testPassThroughOfBitstream(FileSinkAnnexB &outputFile);
 
   std::map<int, parser::hevc::NalUnitHEVC> vpsPerFile;
   std::map<int, parser::hevc::NalUnitHEVC> spsPerFile;
   std::map<int, parser::hevc::NalUnitHEVC> ppsPerFile;
 
   std::vector<parser::hevc::ParserAnnexBHEVC> parsers;
+
+  FileSinkAnnexB fileSink;
 };
 
 } // namespace combiner

@@ -18,6 +18,20 @@ namespace combiner
 {
 
 using namespace parser::hevc;
+using NalUnitVector = std::vector<NalUnitHEVC>;
+
+namespace
+{
+
+bool anyNalUnitsEmpty(const NalUnitVector &nals)
+{
+  return std::any_of(
+      nals.begin(), nals.end(), [](const NalUnitHEVC &nal) { return nal.rawData.empty(); });
+}
+
+} // namespace
+
+using namespace parser::hevc;
 
 Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
 {
@@ -25,76 +39,73 @@ Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
     this->parsers.emplace_back(std::move(file));
 
   FileSinkAnnexB outputFile("debugOutputFile.hevc");
-  this->testPassThroughOfBitstream(outputFile);
 
-  // this->parseHeadersFromFiles();
-  // this->combineFiles();
-}
-
-void Combiner::parseHeadersFromFiles()
-{
-  std::cout << "Getting headers from files...\n";
-
-  for (auto &parser : this->parsers)
-    parser.parseHeaders();
+  this->combineFiles();
 }
 
 void Combiner::combineFiles()
 {
   while (true)
   {
-    std::vector<std::shared_ptr<parser::hevc::NalUnitHEVC>> slicePerFile;
+    NalUnitVector nalPerFile;
 
     for (auto &parser : this->parsers)
-    {
-      const auto slice = parser.getNextSlice();
-      if (!slice)
-        return;
-      slicePerFile.push_back(std::move(slice));
-    }
+      nalPerFile.push_back(parser.parseNextNalFromFile());
 
-    if (slicePerFile.size() != this->parsers.size())
+    if (anyNalUnitsEmpty(nalPerFile))
       return;
 
-    auto firstFileSlice =
-        dynamic_cast<parser::hevc::slice_segment_layer_rbsp *>(slicePerFile.at(0)->rbsp.get());
-
-    if (!firstFileSlice)
-      throw std::runtime_error("Unable to cast slice");
-
-    std::cout << "Combine POC " << firstFileSlice->sliceSegmentHeader.PicOrderCntVal << "\n";
-  }
-}
-
-void Combiner::testPassThroughOfBitstream(FileSinkAnnexB &outputFile)
-{
-  auto &parser = this->parsers.at(0);
-  while (const auto &nal = parser.parseNextNalFromFile())
-  {
-    if (nal->header.nal_unit_type == NalType::VPS_NUT)
+    const auto firstNalType = nalPerFile.at(0).header.nal_unit_type;
+    for (const auto &nal : nalPerFile)
     {
-      auto vps = dynamic_cast<parser::hevc::video_parameter_set_rbsp *>(nal->rbsp.get());
+      if (nal.header.nal_unit_type != firstNalType)
+        throw std::runtime_error("Nal type of all files must be identical");
+    }
+
+    const auto &firstNal = nalPerFile.at(0);
+    if (firstNalType == NalType::VPS_NUT)
+    {
+      auto vps = dynamic_cast<video_parameter_set_rbsp *>(firstNal.rbsp.get());
 
       parser::SubByteWriter writer;
-      nal->header.write(writer);
       vps->write(writer);
       const auto data = writer.finishWritingAndGetData();
-
-      outputFile.writeNALUnit(data);
+      this->fileSink.writeNALUnit(data);
     }
-    else if (nal->header.nal_unit_type == NalType::SPS_NUT)
+    else if (firstNalType == NalType::SPS_NUT)
     {
-      auto sps = dynamic_cast<parser::hevc::seq_parameter_set_rbsp *>(nal->rbsp.get());
+      auto sps = dynamic_cast<seq_parameter_set_rbsp *>(firstNal.rbsp.get());
 
       parser::SubByteWriter writer;
-      nal->header.write(writer);
       sps->write(writer);
       const auto data = writer.finishWritingAndGetData();
+      this->fileSink.writeNALUnit(data);
+    }
+    else if (firstNalType == NalType::PPS_NUT)
+    {
+      auto pps = dynamic_cast<pic_parameter_set_rbsp *>(firstNal.rbsp.get());
 
-      outputFile.writeNALUnit(data);
+      parser::SubByteWriter writer;
+      pps->write(writer);
+      const auto data = writer.finishWritingAndGetData();
+      this->fileSink.writeNALUnit(data);
+    }
+    else if (nalPerFile.at(0).header.isSlice())
+    {
+      auto slice = dynamic_cast<slice_segment_layer_rbsp *>(firstNal.rbsp.get());
+      std::cout << "Combine POC " << slice->sliceSegmentHeader.PicOrderCntVal << "\n";
+
+      parser::SubByteWriter writer;
+      const auto &          activeParameterSets = this->parsers.at(0).getActiveParameterSets();
+      slice->write(
+          writer, nalPerFile.at(0).header, activeParameterSets.spsMap, activeParameterSets.ppsMap);
+      const auto data = writer.finishWritingAndGetData();
+      this->fileSink.writeNALUnit(data);
     }
     else
-      outputFile.writeNALUnit(nal->rawData);
+    {
+      this->fileSink.writeNALUnit(firstNal.rawData);
+    }
   }
 }
 

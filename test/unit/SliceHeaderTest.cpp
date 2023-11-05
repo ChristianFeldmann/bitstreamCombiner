@@ -58,13 +58,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame0)
   EXPECT_EQ(ssh.slice_loop_filter_across_slices_enabled_flag, true);
 
   parser::SubByteWriter writer;
-  ssh.write(writer,
-            FirstAUInDecodingOrder(true),
-            prevTid0PicSlicePicOrderCntLsb,
-            prevTid0PicPicOrderCntMsb,
-            nal_unit_header(NalType::IDR_N_LP),
-            spsMap,
-            ppsMap);
+  ssh.write(writer, nal_unit_header(NalType::IDR_N_LP), spsMap, ppsMap);
   const auto writtenData = writer.finishWritingAndGetData();
 
   EXPECT_EQ(RAW_SLICE_HEADER_DATA_SLICE_0.size(), writtenData.size());
@@ -119,13 +113,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame1)
   EXPECT_EQ(ssh.slice_deblocking_filter_disabled_flag, false);
 
   parser::SubByteWriter writer;
-  ssh.write(writer,
-            FirstAUInDecodingOrder(false),
-            prevTid0PicSlicePicOrderCntLsb,
-            prevTid0PicPicOrderCntMsb,
-            nal_unit_header(NalType::TRAIL_R),
-            spsMap,
-            ppsMap);
+  ssh.write(writer, nal_unit_header(NalType::TRAIL_R), spsMap, ppsMap);
   const auto writtenData = writer.finishWritingAndGetData();
 
   EXPECT_EQ(RAW_SLICE_HEADER_DATA_SLICE_1.size(), writtenData.size());
@@ -187,13 +175,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame2)
   EXPECT_EQ(ssh.slice_loop_filter_across_slices_enabled_flag, true);
 
   parser::SubByteWriter writer;
-  ssh.write(writer,
-            FirstAUInDecodingOrder(false),
-            prevTid0PicSlicePicOrderCntLsb,
-            prevTid0PicPicOrderCntMsb,
-            nal_unit_header(NalType::TRAIL_N),
-            spsMap,
-            ppsMap);
+  ssh.write(writer, nal_unit_header(NalType::TRAIL_N), spsMap, ppsMap);
   const auto writtenData = writer.finishWritingAndGetData();
 
   EXPECT_EQ(RAW_SLICE_HEADER_DATA_SLICE_2.size(), writtenData.size());

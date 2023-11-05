@@ -21,12 +21,7 @@ class ParserAnnexBHEVC
 public:
   ParserAnnexBHEVC(combiner::FileSourceAnnexB &&file);
 
-  void                         parseHeaders();
-  std::shared_ptr<NalUnitHEVC> getNextSlice();
-  std::shared_ptr<NalUnitHEVC> parseNextNalFromFile();
-
-private:
-  FileSourceAnnexB fileSource;
+  NalUnitHEVC parseNextNalFromFile();
 
   struct ActiveParameterSets
   {
@@ -34,6 +29,11 @@ private:
     SPSMap spsMap;
     PPSMap ppsMap;
   };
+  const ActiveParameterSets &getActiveParameterSets() const;
+
+private:
+  FileSourceAnnexB fileSource;
+
   ActiveParameterSets activeParameterSets;
 
   bool     firstAUInDecodingOrder{true};

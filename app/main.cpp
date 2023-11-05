@@ -33,11 +33,11 @@ int main(int argc, char const *argv[])
     return 1;
   }
 
-  // if (settings.inputFiles.size() != 2)
-  // {
-  //   std::cout << "Currently only 2 input files are supported.\n";
-  //   return 1;
-  // }
+  if (settings.inputFiles.size() != 2)
+  {
+    std::cout << "Currently only 2 input files are supported.\n";
+    return 1;
+  }
 
   std::vector<combiner::FileSourceAnnexB> fileSources;
   for (const auto &file : settings.inputFiles)

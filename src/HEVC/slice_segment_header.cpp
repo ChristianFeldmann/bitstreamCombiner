@@ -318,9 +318,6 @@ void slice_segment_header::parse(SubByteReader &               reader,
 }
 
 void slice_segment_header::write(SubByteWriter &        writer,
-                                 const bool             firstAUInDecodingOrder,
-                                 const uint64_t         prevTid0PicSlicePicOrderCntLsb,
-                                 const int              prevTid0PicPicOrderCntMsb,
                                  const nal_unit_header &nalUnitHeader,
                                  const SPSMap &         spsMap,
                                  const PPSMap &         ppsMap) const

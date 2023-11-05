@@ -41,20 +41,11 @@ public:
   }
 
   void write(SubByteWriter &        writer,
-             const bool             firstAUInDecodingOrder,
-             const uint64_t         prevTid0PicSlicePicOrderCntLsb,
-             const int              prevTid0PicPicOrderCntMsb,
              const nal_unit_header &nalUnitHeader,
              const SPSMap &         spsMap,
              const PPSMap &         ppsMap) const
   {
-    this->sliceSegmentHeader.write(writer,
-                                   firstAUInDecodingOrder,
-                                   prevTid0PicSlicePicOrderCntLsb,
-                                   prevTid0PicPicOrderCntMsb,
-                                   nalUnitHeader,
-                                   spsMap,
-                                   ppsMap);
+    this->sliceSegmentHeader.write(writer, nalUnitHeader, spsMap, ppsMap);
   }
 
   slice_segment_header sliceSegmentHeader;

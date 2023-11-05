@@ -46,9 +46,6 @@ public:
              const std::optional<uint64_t> firstSliceInSegmentPicOrderCntLsb);
 
   void write(SubByteWriter &        writer,
-             const bool             firstAUInDecodingOrder,
-             const uint64_t         prevTid0PicSlicePicOrderCntLsb,
-             const int              prevTid0PicPicOrderCntMsb,
              const nal_unit_header &nalUnitHeader,
              const SPSMap &         spsMap,
              const PPSMap &         ppsMap) const;

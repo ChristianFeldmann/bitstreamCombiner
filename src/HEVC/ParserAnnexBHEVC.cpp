@@ -26,100 +26,55 @@ ParserAnnexBHEVC::ParserAnnexBHEVC(combiner::FileSourceAnnexB &&fileSource)
 {
 }
 
-void ParserAnnexBHEVC::parseHeaders()
-{
-  int  nalID    = 0;
-  bool foundVPS = false;
-  bool foundSPS = false;
-  bool foundPPS = false;
-  while (!foundVPS || !foundSPS || !foundPPS)
-  {
-    const auto nal = this->parseNextNalFromFile();
-    if (!nal)
-      throw std::logic_error("File ended while we were looking for parameter sets.");
-
-    switch (nal->header.nal_unit_type)
-    {
-    case NalType::VPS_NUT:
-      foundVPS = true;
-      break;
-    case NalType::SPS_NUT:
-      foundSPS = true;
-      break;
-    case NalType::PPS_NUT:
-      foundPPS = true;
-      break;
-
-    default:
-      break;
-    }
-
-    std::cout << "  Parsed " << NalTypeMapper.getName(nal->header.nal_unit_type) << "\n";
-  }
-}
-
-std::shared_ptr<NalUnitHEVC> ParserAnnexBHEVC::getNextSlice()
-{
-  while (true)
-  {
-    const auto nal = this->parseNextNalFromFile();
-    if (!nal)
-      return {};
-
-    if (nal->header.isSlice())
-      return nal;
-  }
-}
-
-std::shared_ptr<NalUnitHEVC> ParserAnnexBHEVC::parseNextNalFromFile()
+NalUnitHEVC ParserAnnexBHEVC::parseNextNalFromFile()
 {
   const auto nalData = this->fileSource.getNextNALUnit();
   if (nalData.size() == 0)
     return {};
 
-  auto                  nal = std::make_shared<NalUnitHEVC>(nalData);
+  NalUnitHEVC           nal(nalData);
   parser::SubByteReader reader(nalData);
-  nal->header.parse(reader);
+  nal.header.parse(reader);
 
-  if (nal->header.nal_unit_type == NalType::VPS_NUT)
+  if (nal.header.nal_unit_type == NalType::VPS_NUT)
   {
     video_parameter_set_rbsp vps;
     vps.parse(reader);
-    nal->rbsp = std::make_unique<video_parameter_set_rbsp>(vps);
+    nal.rbsp = std::make_unique<video_parameter_set_rbsp>(vps);
 
     this->activeParameterSets.vpsMap[vps.vps_video_parameter_set_id] = vps;
   }
-  else if (nal->header.nal_unit_type == NalType::SPS_NUT)
+  else if (nal.header.nal_unit_type == NalType::SPS_NUT)
   {
     seq_parameter_set_rbsp sps;
     sps.parse(reader);
-    nal->rbsp = std::make_unique<seq_parameter_set_rbsp>(sps);
+    nal.rbsp = std::make_unique<seq_parameter_set_rbsp>(sps);
 
     this->activeParameterSets.spsMap[sps.sps_seq_parameter_set_id] = sps;
   }
-  else if (nal->header.nal_unit_type == NalType::PPS_NUT)
+  else if (nal.header.nal_unit_type == NalType::PPS_NUT)
   {
     pic_parameter_set_rbsp pps;
     pps.parse(reader);
-    nal->rbsp = std::make_unique<pic_parameter_set_rbsp>(pps);
+    nal.rbsp = std::make_unique<pic_parameter_set_rbsp>(pps);
 
     this->activeParameterSets.ppsMap[pps.pps_pic_parameter_set_id] = pps;
   }
-  if (nal->header.isSlice())
+  if (nal.header.isSlice())
   {
     slice_segment_layer_rbsp slice;
     slice.parse(reader,
                 this->firstAUInDecodingOrder,
                 this->prevTid0PicSlicePicOrderCntLsb,
                 this->prevTid0PicPicOrderCntMsb,
-                nal->header,
+                nal.header,
                 this->activeParameterSets.spsMap,
                 this->activeParameterSets.ppsMap,
                 this->firstSliceInSegmentPicOrderCntLsb);
 
     this->firstAUInDecodingOrder = false;
-    auto TemporalId              = nal->header.nuh_temporal_id_plus1 - 1;
-    if (TemporalId == 0 && !nal->header.isRASL() && !nal->header.isRADL())
+    auto TemporalId              = nal.header.nuh_temporal_id_plus1 - 1;
+    if (TemporalId == 0 && !nal.header.isRASL() && !nal.header.isRADL())
     {
       // Let prevTid0Pic be the previous picture in decoding order that has TemporalId
       // equal to 0 and that is not a RASL picture, a RADL picture or an SLNR picture.
@@ -130,10 +85,15 @@ std::shared_ptr<NalUnitHEVC> ParserAnnexBHEVC::parseNextNalFromFile()
     if (slice.sliceSegmentHeader.first_slice_segment_in_pic_flag)
       this->firstSliceInSegmentPicOrderCntLsb = slice.sliceSegmentHeader.slice_pic_order_cnt_lsb;
 
-    nal->rbsp = std::make_unique<slice_segment_layer_rbsp>(slice);
+    nal.rbsp = std::make_unique<slice_segment_layer_rbsp>(slice);
   }
 
   return nal;
+}
+
+const ParserAnnexBHEVC::ActiveParameterSets &ParserAnnexBHEVC::getActiveParameterSets() const
+{
+  return this->activeParameterSets;
 }
 
 } // namespace combiner::parser::hevc

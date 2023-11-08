@@ -10,6 +10,7 @@
 #include <FileSourceAnnexB.h>
 #include <HEVC/NalUnitHEVC.h>
 #include <HEVC/ParserAnnexBHEVC.h>
+#include <HEVC/commonMaps.h>
 
 #include <vector>
 
@@ -23,6 +24,7 @@ public:
 
 private:
   void combineFiles();
+  void writeOutSlices(const std::vector<parser::hevc::NalUnitHEVC> &nalUnits);
 
   std::map<int, parser::hevc::NalUnitHEVC> vpsPerFile;
   std::map<int, parser::hevc::NalUnitHEVC> spsPerFile;
@@ -30,7 +32,10 @@ private:
 
   std::vector<parser::hevc::ParserAnnexBHEVC> parsers;
 
-  FileSinkAnnexB outputFile;
+  FrameSize frameSize{};
+
+  FileSinkAnnexB                    outputFile;
+  parser::hevc::ActiveParameterSets activeWritingParameterSets{};
 };
 
 } // namespace combiner

@@ -33,9 +33,9 @@ int main(int argc, char const *argv[])
     return 1;
   }
 
-  if (settings.inputFiles.size() != 2)
+  if (settings.inputFiles.size() != 2 && settings.inputFiles.size() != 4)
   {
-    std::cout << "Currently only 2 input files are supported.\n";
+    std::cout << "Currently only 2/4 input files are supported.\n";
     return 1;
   }
 

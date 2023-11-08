@@ -59,8 +59,7 @@ void slice_segment_header::parse(SubByteReader &               reader,
                                  const uint64_t                prevTid0PicSlicePicOrderCntLsb,
                                  const int                     prevTid0PicPicOrderCntMsb,
                                  const nal_unit_header &       nalUnitHeader,
-                                 const SPSMap &                spsMap,
-                                 const PPSMap &                ppsMap,
+                                 const ActiveParameterSets &   activeParameterSets,
                                  const std::optional<uint64_t> firstSliceInSegmentPicOrderCntLsb)
 {
   this->first_slice_segment_in_pic_flag = reader.readFlag();
@@ -70,13 +69,13 @@ void slice_segment_header::parse(SubByteReader &               reader,
 
   this->slice_pic_parameter_set_id = reader.readUEV();
 
-  if (ppsMap.count(this->slice_pic_parameter_set_id) == 0)
+  if (activeParameterSets.ppsMap.count(this->slice_pic_parameter_set_id) == 0)
     throw std::logic_error("PPS with given slice_pic_parameter_set_id not found.");
-  const auto &pps = ppsMap.at(this->slice_pic_parameter_set_id);
+  const auto &pps = activeParameterSets.ppsMap.at(this->slice_pic_parameter_set_id);
 
-  if (spsMap.count(pps.pps_seq_parameter_set_id) == 0)
+  if (activeParameterSets.spsMap.count(pps.pps_seq_parameter_set_id) == 0)
     throw std::logic_error("SPS with given pps_seq_parameter_set_id not found.");
-  const auto &sps = spsMap.at(pps.pps_seq_parameter_set_id);
+  const auto &sps = activeParameterSets.spsMap.at(pps.pps_seq_parameter_set_id);
 
   if (!this->first_slice_segment_in_pic_flag)
   {
@@ -315,12 +314,13 @@ void slice_segment_header::parse(SubByteReader &               reader,
   PicOrderCntVal = PicOrderCntMsb + static_cast<int>(slice_pic_order_cnt_lsb);
 
   byte_alignment::parse(reader);
+
+  this->nrBytesInHeader = reader.nrBytesRead();
 }
 
-void slice_segment_header::write(SubByteWriter &        writer,
-                                 const nal_unit_header &nalUnitHeader,
-                                 const SPSMap &         spsMap,
-                                 const PPSMap &         ppsMap) const
+void slice_segment_header::write(SubByteWriter &            writer,
+                                 const nal_unit_header &    nalUnitHeader,
+                                 const ActiveParameterSets &activeParameterSets) const
 {
   writer.writeFlag(this->first_slice_segment_in_pic_flag);
 
@@ -329,13 +329,13 @@ void slice_segment_header::write(SubByteWriter &        writer,
 
   writer.writeUEV(this->slice_pic_parameter_set_id);
 
-  if (ppsMap.count(this->slice_pic_parameter_set_id) == 0)
+  if (activeParameterSets.ppsMap.count(this->slice_pic_parameter_set_id) == 0)
     throw std::logic_error("PPS with given slice_pic_parameter_set_id not found.");
-  const auto &pps = ppsMap.at(this->slice_pic_parameter_set_id);
+  const auto &pps = activeParameterSets.ppsMap.at(this->slice_pic_parameter_set_id);
 
-  if (spsMap.count(pps.pps_seq_parameter_set_id) == 0)
+  if (activeParameterSets.spsMap.count(pps.pps_seq_parameter_set_id) == 0)
     throw std::logic_error("SPS with given pps_seq_parameter_set_id not found.");
-  const auto &sps = spsMap.at(pps.pps_seq_parameter_set_id);
+  const auto &sps = activeParameterSets.spsMap.at(pps.pps_seq_parameter_set_id);
 
   if (!this->first_slice_segment_in_pic_flag)
   {

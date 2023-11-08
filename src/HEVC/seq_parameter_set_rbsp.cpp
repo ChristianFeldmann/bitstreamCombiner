@@ -135,16 +135,7 @@ void seq_parameter_set_rbsp::parse(SubByteReader &reader)
 
   rbsp_trailing_bits::parse(reader);
 
-  // Calculate some values - Rec. ITU-T H.265 v3 (04/2015) 7.4.3.2.1
-  this->MinCbLog2SizeY = this->log2_min_luma_coding_block_size_minus3 + 3; // (7-10)
-  this->CtbLog2SizeY =
-      this->MinCbLog2SizeY + this->log2_diff_max_min_luma_coding_block_size; // (7-11)
-  this->CtbSizeY = uint64_t(1) << this->CtbLog2SizeY;                        // (7-13)
-  this->PicWidthInCtbsY =
-      (this->pic_width_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY; // (7-15)
-  this->PicHeightInCtbsY =
-      (this->pic_height_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY; // (7-17)
-  this->PicSizeInCtbsY = this->PicWidthInCtbsY * this->PicHeightInCtbsY;        // (7-19)
+  this->updateCalculatedValues();
 }
 
 void seq_parameter_set_rbsp::write(SubByteWriter &writer) const
@@ -261,6 +252,25 @@ void seq_parameter_set_rbsp::write(SubByteWriter &writer) const
     throw std::runtime_error("Not implemented yet");
 
   rbsp_trailing_bits::write(writer);
+}
+
+FrameSize seq_parameter_set_rbsp::getFrameSize() const
+{
+  return {this->pic_width_in_luma_samples, this->pic_height_in_luma_samples};
+}
+
+void seq_parameter_set_rbsp::updateCalculatedValues()
+{
+  // Calculate some values - Rec. ITU-T H.265 v3 (04/2015) 7.4.3.2.1
+  this->MinCbLog2SizeY = this->log2_min_luma_coding_block_size_minus3 + 3; // (7-10)
+  this->CtbLog2SizeY =
+      this->MinCbLog2SizeY + this->log2_diff_max_min_luma_coding_block_size; // (7-11)
+  this->CtbSizeY = uint64_t(1) << this->CtbLog2SizeY;                        // (7-13)
+  this->PicWidthInCtbsY =
+      (this->pic_width_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY; // (7-15)
+  this->PicHeightInCtbsY =
+      (this->pic_height_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY; // (7-17)
+  this->PicSizeInCtbsY = this->PicWidthInCtbsY * this->PicHeightInCtbsY;        // (7-19)
 }
 
 } // namespace combiner::parser::hevc

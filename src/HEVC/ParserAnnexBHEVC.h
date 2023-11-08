@@ -23,12 +23,6 @@ public:
 
   NalUnitHEVC parseNextNalFromFile();
 
-  struct ActiveParameterSets
-  {
-    VPSMap vpsMap;
-    SPSMap spsMap;
-    PPSMap ppsMap;
-  };
   const ActiveParameterSets &getActiveParameterSets() const;
 
 private:

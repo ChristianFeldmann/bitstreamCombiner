@@ -26,8 +26,7 @@ public:
              const uint64_t                prevTid0PicSlicePicOrderCntLsb,
              const int                     prevTid0PicPicOrderCntMsb,
              const nal_unit_header &       nalUnitHeader,
-             const SPSMap &                spsMap,
-             const PPSMap &                ppsMap,
+             const ActiveParameterSets &   activeParameterSets,
              const std::optional<uint64_t> firstSliceInSegmentPicOrderCntLsb)
   {
     this->sliceSegmentHeader.parse(reader,
@@ -35,17 +34,15 @@ public:
                                    prevTid0PicSlicePicOrderCntLsb,
                                    prevTid0PicPicOrderCntMsb,
                                    nalUnitHeader,
-                                   spsMap,
-                                   ppsMap,
+                                   activeParameterSets,
                                    firstSliceInSegmentPicOrderCntLsb);
   }
 
-  void write(SubByteWriter &        writer,
-             const nal_unit_header &nalUnitHeader,
-             const SPSMap &         spsMap,
-             const PPSMap &         ppsMap) const
+  void write(SubByteWriter &            writer,
+             const nal_unit_header &    nalUnitHeader,
+             const ActiveParameterSets &activeParameterSets) const
   {
-    this->sliceSegmentHeader.write(writer, nalUnitHeader, spsMap, ppsMap);
+    this->sliceSegmentHeader.write(writer, nalUnitHeader, activeParameterSets);
   }
 
   slice_segment_header sliceSegmentHeader;

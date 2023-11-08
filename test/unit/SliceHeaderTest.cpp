@@ -16,7 +16,21 @@
 namespace combiner
 {
 
+namespace
+{
+
 using namespace parser::hevc;
+
+ActiveParameterSets parseActiveParameterSetsFromData()
+{
+  ActiveParameterSets activeParameterSets;
+  activeParameterSets.spsMap[0] =
+      parserParameterSetFromData<parser::hevc::seq_parameter_set_rbsp>(RAW_SPS_DATA);
+  activeParameterSets.ppsMap[0] = parserParameterSetFromData<pic_parameter_set_rbsp>(RAW_PPS_DATA);
+  return activeParameterSets;
+}
+
+} // namespace
 
 using FirstAUInDecodingOrder                      = bool;
 constexpr uint64_t prevTid0PicSlicePicOrderCntLsb = 0;
@@ -24,9 +38,7 @@ constexpr int      prevTid0PicPicOrderCntMsb      = 0;
 
 TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame0)
 {
-  const SPSMap spsMap = {
-      {0, parserParameterSetFromData<parser::hevc::seq_parameter_set_rbsp>(RAW_SPS_DATA)}};
-  const PPSMap ppsMap = {{0, parserParameterSetFromData<pic_parameter_set_rbsp>(RAW_PPS_DATA)}};
+  const auto activeParameterSets = parseActiveParameterSetsFromData();
 
   parser::SubByteReader reader(RAW_SLICE_HEADER_DATA_SLICE_0);
 
@@ -36,8 +48,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame0)
                     prevTid0PicSlicePicOrderCntLsb,
                     prevTid0PicPicOrderCntMsb,
                     nal_unit_header(NalType::IDR_N_LP),
-                    spsMap,
-                    ppsMap,
+                    activeParameterSets,
                     {});
 
   const auto &ssh = sliceHeader.sliceSegmentHeader;
@@ -58,7 +69,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame0)
   EXPECT_EQ(ssh.slice_loop_filter_across_slices_enabled_flag, true);
 
   parser::SubByteWriter writer;
-  ssh.write(writer, nal_unit_header(NalType::IDR_N_LP), spsMap, ppsMap);
+  ssh.write(writer, nal_unit_header(NalType::IDR_N_LP), activeParameterSets);
   const auto writtenData = writer.finishWritingAndGetData();
 
   EXPECT_EQ(RAW_SLICE_HEADER_DATA_SLICE_0.size(), writtenData.size());
@@ -69,9 +80,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame0)
 
 TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame1)
 {
-  const SPSMap spsMap = {
-      {0, parserParameterSetFromData<parser::hevc::seq_parameter_set_rbsp>(RAW_SPS_DATA)}};
-  const PPSMap ppsMap = {{0, parserParameterSetFromData<pic_parameter_set_rbsp>(RAW_PPS_DATA)}};
+  const auto activeParameterSets = parseActiveParameterSetsFromData();
 
   constexpr uint64_t firstSliceInSegmentPicOrderCntLsb = 0;
 
@@ -83,8 +92,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame1)
                     prevTid0PicSlicePicOrderCntLsb,
                     prevTid0PicPicOrderCntMsb,
                     nal_unit_header(NalType::TRAIL_R),
-                    spsMap,
-                    ppsMap,
+                    activeParameterSets,
                     firstSliceInSegmentPicOrderCntLsb);
 
   const auto &ssh = sliceHeader.sliceSegmentHeader;
@@ -113,7 +121,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame1)
   EXPECT_EQ(ssh.slice_deblocking_filter_disabled_flag, false);
 
   parser::SubByteWriter writer;
-  ssh.write(writer, nal_unit_header(NalType::TRAIL_R), spsMap, ppsMap);
+  ssh.write(writer, nal_unit_header(NalType::TRAIL_R), activeParameterSets);
   const auto writtenData = writer.finishWritingAndGetData();
 
   EXPECT_EQ(RAW_SLICE_HEADER_DATA_SLICE_1.size(), writtenData.size());
@@ -124,9 +132,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame1)
 
 TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame2)
 {
-  const SPSMap spsMap = {
-      {0, parserParameterSetFromData<parser::hevc::seq_parameter_set_rbsp>(RAW_SPS_DATA)}};
-  const PPSMap ppsMap = {{0, parserParameterSetFromData<pic_parameter_set_rbsp>(RAW_PPS_DATA)}};
+  const auto activeParameterSets = parseActiveParameterSetsFromData();
 
   constexpr uint64_t firstSliceInSegmentPicOrderCntLsb = 0;
 
@@ -138,8 +144,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame2)
                     prevTid0PicSlicePicOrderCntLsb,
                     prevTid0PicPicOrderCntMsb,
                     nal_unit_header(NalType::TRAIL_N),
-                    spsMap,
-                    ppsMap,
+                    activeParameterSets,
                     firstSliceInSegmentPicOrderCntLsb);
 
   const auto &ssh = sliceHeader.sliceSegmentHeader;
@@ -175,7 +180,7 @@ TEST(SliceHeader, TestParsingAndWritingOfSliceHeaderFrame2)
   EXPECT_EQ(ssh.slice_loop_filter_across_slices_enabled_flag, true);
 
   parser::SubByteWriter writer;
-  ssh.write(writer, nal_unit_header(NalType::TRAIL_N), spsMap, ppsMap);
+  ssh.write(writer, nal_unit_header(NalType::TRAIL_N), activeParameterSets);
   const auto writtenData = writer.finishWritingAndGetData();
 
   EXPECT_EQ(RAW_SLICE_HEADER_DATA_SLICE_2.size(), writtenData.size());

@@ -68,8 +68,7 @@ NalUnitHEVC ParserAnnexBHEVC::parseNextNalFromFile()
                 this->prevTid0PicSlicePicOrderCntLsb,
                 this->prevTid0PicPicOrderCntMsb,
                 nal.header,
-                this->activeParameterSets.spsMap,
-                this->activeParameterSets.ppsMap,
+                this->activeParameterSets,
                 this->firstSliceInSegmentPicOrderCntLsb);
 
     this->firstAUInDecodingOrder = false;
@@ -91,7 +90,7 @@ NalUnitHEVC ParserAnnexBHEVC::parseNextNalFromFile()
   return nal;
 }
 
-const ParserAnnexBHEVC::ActiveParameterSets &ParserAnnexBHEVC::getActiveParameterSets() const
+const ActiveParameterSets &ParserAnnexBHEVC::getActiveParameterSets() const
 {
   return this->activeParameterSets;
 }

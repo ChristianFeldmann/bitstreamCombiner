@@ -50,4 +50,11 @@ using VPSMap = std::map<uint64_t, hevc::video_parameter_set_rbsp>;
 using SPSMap = std::map<uint64_t, hevc::seq_parameter_set_rbsp>;
 using PPSMap = std::map<uint64_t, hevc::pic_parameter_set_rbsp>;
 
+struct ActiveParameterSets
+{
+  VPSMap vpsMap;
+  SPSMap spsMap;
+  PPSMap ppsMap;
+};
+
 } // namespace combiner::parser::hevc

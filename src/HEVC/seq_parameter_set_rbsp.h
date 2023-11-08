@@ -27,6 +27,8 @@ public:
   void parse(SubByteReader &reader);
   void write(SubByteWriter &writer) const;
 
+  FrameSize getFrameSize() const;
+
   uint64_t           sps_video_parameter_set_id{};
   uint64_t           sps_max_sub_layers_minus1{};
   bool               sps_temporal_id_nesting_flag{};
@@ -90,6 +92,7 @@ public:
   uint64_t sps_extension_5bits{};
 
   // 7.4.3.2.1
+  void updateCalculatedValues();
   uint64_t ChromaArrayType{};
   uint64_t SubWidthC, SubHeightC{};
   uint64_t MinCbLog2SizeY;

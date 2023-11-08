@@ -41,14 +41,12 @@ public:
              const uint64_t                prevTid0PicSlicePicOrderCntLsb,
              const int                     prevTid0PicPicOrderCntMsb,
              const nal_unit_header &       nalUnitHeader,
-             const SPSMap &                spsMap,
-             const PPSMap &                ppsMap,
+             const ActiveParameterSets &   activeParameterSets,
              const std::optional<uint64_t> firstSliceInSegmentPicOrderCntLsb);
 
-  void write(SubByteWriter &        writer,
-             const nal_unit_header &nalUnitHeader,
-             const SPSMap &         spsMap,
-             const PPSMap &         ppsMap) const;
+  void write(SubByteWriter &            writer,
+             const nal_unit_header &    nalUnitHeader,
+             const ActiveParameterSets &activeParameterSets) const;
 
   bool              first_slice_segment_in_pic_flag{};
   bool              no_output_of_prior_pics_flag{};
@@ -108,7 +106,8 @@ public:
   vector<int> UsedByCurrPicLt;
   bool        NoRaslOutputFlag{};
 
-  int globalPOC{-1};
+  int    globalPOC{-1};
+  size_t nrBytesInHeader{0};
 };
 
 } // namespace combiner::parser::hevc

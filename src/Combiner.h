@@ -19,7 +19,7 @@ namespace combiner
 class Combiner
 {
 public:
-  Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles);
+  Combiner(std::vector<FileSourceAnnexB> &&inputFiles, FileSinkAnnexB &&outputFile);
 
 private:
   void combineFiles();
@@ -30,7 +30,7 @@ private:
 
   std::vector<parser::hevc::ParserAnnexBHEVC> parsers;
 
-  FileSinkAnnexB fileSink;
+  FileSinkAnnexB outputFile;
 };
 
 } // namespace combiner

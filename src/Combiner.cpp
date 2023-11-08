@@ -33,12 +33,11 @@ bool anyNalUnitsEmpty(const NalUnitVector &nals)
 
 using namespace parser::hevc;
 
-Combiner::Combiner(std::vector<combiner::FileSourceAnnexB> &&inputFiles)
+Combiner::Combiner(std::vector<FileSourceAnnexB> &&inputFiles, FileSinkAnnexB &&outputFile)
+    : outputFile(std::move(outputFile))
 {
   for (auto &file : inputFiles)
     this->parsers.emplace_back(std::move(file));
-
-  FileSinkAnnexB outputFile("debugOutputFile.hevc");
 
   this->combineFiles();
 }
@@ -70,7 +69,7 @@ void Combiner::combineFiles()
       parser::SubByteWriter writer;
       vps->write(writer);
       const auto data = writer.finishWritingAndGetData();
-      this->fileSink.writeNALUnit(data);
+      this->outputFile.writeNALUnit(data);
     }
     else if (firstNalType == NalType::SPS_NUT)
     {
@@ -79,7 +78,7 @@ void Combiner::combineFiles()
       parser::SubByteWriter writer;
       sps->write(writer);
       const auto data = writer.finishWritingAndGetData();
-      this->fileSink.writeNALUnit(data);
+      this->outputFile.writeNALUnit(data);
     }
     else if (firstNalType == NalType::PPS_NUT)
     {
@@ -88,7 +87,7 @@ void Combiner::combineFiles()
       parser::SubByteWriter writer;
       pps->write(writer);
       const auto data = writer.finishWritingAndGetData();
-      this->fileSink.writeNALUnit(data);
+      this->outputFile.writeNALUnit(data);
     }
     else if (nalPerFile.at(0).header.isSlice())
     {
@@ -100,11 +99,11 @@ void Combiner::combineFiles()
       slice->write(
           writer, nalPerFile.at(0).header, activeParameterSets.spsMap, activeParameterSets.ppsMap);
       const auto data = writer.finishWritingAndGetData();
-      this->fileSink.writeNALUnit(data);
+      this->outputFile.writeNALUnit(data);
     }
     else
     {
-      this->fileSink.writeNALUnit(firstNal.rawData);
+      this->outputFile.writeNALUnit(firstNal.rawData);
     }
   }
 }

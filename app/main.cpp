@@ -51,7 +51,9 @@ int main(int argc, char const *argv[])
     fileSources.emplace_back(file);
   }
 
-  combiner::Combiner combiner(std::move(fileSources));
+  combiner::FileSinkAnnexB outputFile("combinedFile.hevc");
+
+  combiner::Combiner combiner(std::move(fileSources), std::move(outputFile));
 
   return 0;
 }

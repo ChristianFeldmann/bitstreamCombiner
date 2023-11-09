@@ -6,6 +6,7 @@
 
 #include "FileSourceAnnexB.h"
 
+#include <algorithm>
 #include <array>
 
 namespace combiner

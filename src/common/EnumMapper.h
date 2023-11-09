@@ -8,11 +8,37 @@
 
 #include <common/Functions.h>
 
+#include <algorithm>
 #include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+namespace
+{
+
+std::string toLower(std::string str)
+{
+  std::transform(
+      str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+  return str;
+}
+
+std::optional<unsigned long> toUnsigned(const std::string &text)
+{
+  try
+  {
+    auto index = std::stoul(text);
+    return index;
+  }
+  catch (...)
+  {
+    return {};
+  }
+}
+
+} // namespace
 
 /* This class implement mapping of "enum class" values to and from names (string).
  */
@@ -42,7 +68,7 @@ public:
   std::optional<T> getValue(std::string name, StringType stringType = StringType::Name) const
   {
     if (stringType == StringType::NameOrIndex)
-      if (auto index = functions::toUnsigned(name))
+      if (auto index = toUnsigned(name))
         return this->at(*index);
 
     for (const auto &entry : this->entryVector)
@@ -59,15 +85,15 @@ public:
                                            StringType  stringType = StringType::Name) const
   {
     if (stringType == StringType::NameOrIndex)
-      if (auto index = functions::toUnsigned(name))
+      if (auto index = toUnsigned(name))
         return this->at(*index);
 
-    name = functions::toLower(name);
+    name = toLower(name);
     for (const auto &entry : this->entryVector)
     {
-      if ((stringType == StringType::Name && functions::toLower(entry.name) == name) ||
-          (stringType == StringType::NameOrIndex && functions::toLower(entry.text) == name) ||
-          (stringType == StringType::Text && functions::toLower(entry.text) == name))
+      if ((stringType == StringType::Name && toLower(entry.name) == name) ||
+          (stringType == StringType::NameOrIndex && toLower(entry.text) == name) ||
+          (stringType == StringType::Text && toLower(entry.text) == name))
         return entry.value;
     }
     return {};

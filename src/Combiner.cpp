@@ -183,13 +183,11 @@ void Combiner::combineFiles()
 
       const auto firstSlice = dynamic_cast<slice_segment_layer_rbsp *>(nalPerFile.at(0).rbsp.get());
       std::cout << "Combined POC " << firstSlice->sliceSegmentHeader.PicOrderCntVal << "\n";
-
-      // DEBUG
-      break;
     }
     else
     {
       this->outputFile.writeNALUnit(firstNal.rawData);
+      std::cout << "Pass through " << NalTypeMapper.getName(firstNalType) << " NAL.\n";
     }
   }
 }

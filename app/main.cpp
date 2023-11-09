@@ -4,8 +4,8 @@
  * For a copy, see <https://opensource.org/licenses/MIT>.
  */
 
-#include <Combiner.h>
-#include <FileSourceAnnexB.h>
+#include <Combiner/Combiner.h>
+#include <File/FileSourceAnnexB.h>
 
 #include <filesystem>
 #include <iostream>

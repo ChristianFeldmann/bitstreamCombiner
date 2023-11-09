@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <FileSinkAnnexB.h>
-#include <FileSourceAnnexB.h>
+#include <File/FileSinkAnnexB.h>
+#include <File/FileSourceAnnexB.h>
 #include <HEVC/NalUnitHEVC.h>
 #include <HEVC/ParserAnnexBHEVC.h>
 #include <HEVC/commonMaps.h>
@@ -32,7 +32,7 @@ private:
 
   std::vector<parser::hevc::ParserAnnexBHEVC> parsers;
 
-  FrameSize frameSize{};
+  std::array<FrameSize, 4> frameSizePerInput{};
 
   FileSinkAnnexB                    outputFile;
   parser::hevc::ActiveParameterSets activeWritingParameterSets{};

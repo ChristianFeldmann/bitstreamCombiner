@@ -36,6 +36,7 @@ private:
 
   FileSinkAnnexB                    outputFile;
   parser::hevc::ActiveParameterSets activeWritingParameterSets{};
+  uint64_t                          CtbSizeY{};
 };
 
 } // namespace combiner

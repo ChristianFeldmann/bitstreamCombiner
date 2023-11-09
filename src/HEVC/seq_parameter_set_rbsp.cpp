@@ -23,11 +23,6 @@ void seq_parameter_set_rbsp::parse(SubByteReader &reader)
   this->chroma_format_idc        = reader.readUEV();
   if (this->chroma_format_idc == 3)
     this->separate_colour_plane_flag = reader.readFlag();
-  this->ChromaArrayType = (this->separate_colour_plane_flag) ? 0 : this->chroma_format_idc;
-
-  // Rec. ITU-T H.265 v3 (04/2015) - 6.2 - Table 6-1
-  this->SubWidthC  = (this->chroma_format_idc == 1 || this->chroma_format_idc == 2) ? 2 : 1;
-  this->SubHeightC = (this->chroma_format_idc == 1) ? 2 : 1;
 
   this->pic_width_in_luma_samples  = reader.readUEV();
   this->pic_height_in_luma_samples = reader.readUEV();
@@ -261,16 +256,26 @@ FrameSize seq_parameter_set_rbsp::getFrameSize() const
 
 void seq_parameter_set_rbsp::updateCalculatedValues()
 {
-  // Calculate some values - Rec. ITU-T H.265 v3 (04/2015) 7.4.3.2.1
-  this->MinCbLog2SizeY = this->log2_min_luma_coding_block_size_minus3 + 3; // (7-10)
-  this->CtbLog2SizeY =
-      this->MinCbLog2SizeY + this->log2_diff_max_min_luma_coding_block_size; // (7-11)
-  this->CtbSizeY = uint64_t(1) << this->CtbLog2SizeY;                        // (7-13)
-  this->PicWidthInCtbsY =
-      (this->pic_width_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY; // (7-15)
-  this->PicHeightInCtbsY =
-      (this->pic_height_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY; // (7-17)
-  this->PicSizeInCtbsY = this->PicWidthInCtbsY * this->PicHeightInCtbsY;        // (7-19)
+  this->ChromaArrayType = (this->separate_colour_plane_flag) ? 0 : this->chroma_format_idc;
+
+  // Rec. ITU-T H.265 v3 (04/2015) - 6.2 - Table 6-1
+  this->SubWidthC  = (this->chroma_format_idc == 1 || this->chroma_format_idc == 2) ? 2 : 1;
+  this->SubHeightC = (this->chroma_format_idc == 1) ? 2 : 1;
+
+  // Rec. ITU-T H.265 v3 (04/2015) 7.4.3.2.1 Equation 7-10 to 7-22
+  this->MinCbLog2SizeY    = this->log2_min_luma_coding_block_size_minus3 + 3;
+  this->CtbLog2SizeY      = this->MinCbLog2SizeY + this->log2_diff_max_min_luma_coding_block_size;
+  this->MinCbSizeY        = 1 << MinCbLog2SizeY;
+  this->CtbSizeY          = 1 << this->CtbLog2SizeY;
+  this->PicWidthInMinCbsY = this->pic_width_in_luma_samples / this->MinCbSizeY;
+  this->PicWidthInCtbsY   = (this->pic_width_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY;
+  this->PicHeightInMinCbsY = this->pic_height_in_luma_samples / this->MinCbSizeY;
+  this->PicHeightInCtbsY = (this->pic_height_in_luma_samples + this->CtbSizeY - 1) / this->CtbSizeY;
+  this->PicSizeInMinCbsY = this->PicWidthInMinCbsY * this->PicHeightInMinCbsY;
+  this->PicSizeInCtbsY   = this->PicWidthInCtbsY * this->PicHeightInCtbsY;
+  this->PicSizeInSamplesY   = this->pic_width_in_luma_samples * this->pic_height_in_luma_samples;
+  this->PicWidthInSamplesC  = this->pic_width_in_luma_samples / this->SubWidthC;
+  this->PicHeightInSamplesC = this->pic_height_in_luma_samples / this->SubHeightC;
 }
 
 } // namespace combiner::parser::hevc

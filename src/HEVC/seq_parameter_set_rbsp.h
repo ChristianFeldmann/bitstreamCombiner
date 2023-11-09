@@ -91,16 +91,22 @@ public:
   bool     sps_3d_extension_flag{};
   uint64_t sps_extension_5bits{};
 
-  // 7.4.3.2.1
-  void updateCalculatedValues();
+  void     updateCalculatedValues();
   uint64_t ChromaArrayType{};
   uint64_t SubWidthC, SubHeightC{};
-  uint64_t MinCbLog2SizeY;
-  uint64_t CtbLog2SizeY;
+  uint64_t MinCbLog2SizeY{};
+  uint64_t CtbLog2SizeY{};
+  uint64_t MinCbSizeY{};
   uint64_t CtbSizeY{};
+  uint64_t PicWidthInMinCbsY{};
   uint64_t PicWidthInCtbsY{};
+  uint64_t PicHeightInMinCbsY{};
   uint64_t PicHeightInCtbsY{};
+  uint64_t PicSizeInMinCbsY{};
   uint64_t PicSizeInCtbsY{};
+  uint64_t PicSizeInSamplesY{};
+  uint64_t PicWidthInSamplesC{};
+  uint64_t PicHeightInSamplesC{};
 
   // Get the actual size of the image that will be returned. Internally the image might be bigger.
   uint64_t get_conformance_cropping_width() const

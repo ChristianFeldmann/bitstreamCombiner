@@ -33,26 +33,65 @@ seq_parameter_set_rbsp layoutTilesInSPS(const NalUnitVector &nalUnits)
 {
   seq_parameter_set_rbsp sps;
 
-  const auto firstSPS  = dynamic_cast<seq_parameter_set_rbsp *>(nalUnits.at(0).rbsp.get());
-  const auto firstSize = firstSPS->getFrameSize();
+  const auto firstSPS = dynamic_cast<seq_parameter_set_rbsp *>(nalUnits.at(0).rbsp.get());
   for (const auto &nal : nalUnits)
   {
     const auto sps = dynamic_cast<seq_parameter_set_rbsp *>(nal.rbsp.get());
-    if (sps->getFrameSize() != firstSize)
-      throw std::runtime_error("Frame size of NAL different from reference.");
+    if (sps->CtbSizeY != firstSPS->CtbSizeY)
+      throw std::runtime_error("The CtbSizeY (max CTU size) must be identical for all inputs");
   }
 
-  if (nalUnits.size() == 2)
+  if (nalUnits.size() == 1)
+    return *firstSPS;
+  else if (nalUnits.size() == 2)
   {
     const auto secondSPS = dynamic_cast<seq_parameter_set_rbsp *>(nalUnits.at(1).rbsp.get());
+
+    if (firstSPS->pic_width_in_luma_samples % firstSPS->CtbSizeY != 0)
+      throw std::runtime_error("In a side by side layout, the width of the first input must be a "
+                               "multiple of CtbSizeY (max CTU size)");
 
     sps = *firstSPS;
     sps.pic_width_in_luma_samples =
         firstSPS->pic_width_in_luma_samples + secondSPS->pic_width_in_luma_samples;
+
+    if (firstSPS->pic_height_in_luma_samples != secondSPS->pic_height_in_luma_samples)
+      throw std::runtime_error(
+          "The frame height must be identical to layout the tiles side by side.");
   }
   else if (nalUnits.size() == 4)
   {
-    throw std::runtime_error("Not implemented yet.");
+    const auto secondSPS = dynamic_cast<seq_parameter_set_rbsp *>(nalUnits.at(1).rbsp.get());
+    const auto thirdSPS  = dynamic_cast<seq_parameter_set_rbsp *>(nalUnits.at(2).rbsp.get());
+    const auto fourthSPS = dynamic_cast<seq_parameter_set_rbsp *>(nalUnits.at(3).rbsp.get());
+
+    if (firstSPS->pic_width_in_luma_samples % firstSPS->CtbSizeY != 0 ||
+        firstSPS->pic_height_in_luma_samples % firstSPS->CtbSizeY != 0)
+      throw std::runtime_error("In a 2x2 layout, the width and height of the first input must be a "
+                               "multiple of CtbSizeY (max CTU size)");
+    if (secondSPS->pic_height_in_luma_samples % firstSPS->CtbSizeY != 0)
+      throw std::runtime_error("In a 2x2 layout, the height of the second input must be a "
+                               "multiple of CtbSizeY (max CTU size)");
+    if (thirdSPS->pic_width_in_luma_samples % firstSPS->CtbSizeY != 0)
+      throw std::runtime_error("In a 2x2 layout, the width of the third input must be a "
+                               "multiple of CtbSizeY (max CTU size)");
+
+    sps = *firstSPS;
+    sps.pic_width_in_luma_samples =
+        firstSPS->pic_width_in_luma_samples + secondSPS->pic_width_in_luma_samples;
+
+    if (thirdSPS->pic_width_in_luma_samples != firstSPS->pic_width_in_luma_samples ||
+        fourthSPS->pic_width_in_luma_samples != secondSPS->pic_width_in_luma_samples)
+      throw std::runtime_error("The frame widths of the 4 input files do not match in a way that "
+                               "they can be laid out in a 2x2 grid.");
+
+    sps.pic_height_in_luma_samples =
+        firstSPS->pic_height_in_luma_samples + thirdSPS->pic_height_in_luma_samples;
+
+    if (secondSPS->pic_height_in_luma_samples != firstSPS->pic_height_in_luma_samples ||
+        fourthSPS->pic_height_in_luma_samples != thirdSPS->pic_height_in_luma_samples)
+      throw std::runtime_error("The frame height of the 4 input files do not match in a way that "
+                               "they can be laid out in a 2x2 grid.");
   }
   else
     throw std::runtime_error("Only layout of 2 (side by side) and 4 (grid) files implemented.");
@@ -73,6 +112,9 @@ pic_parameter_set_rbsp enableUniformTiles(const NalUnitVector &nalUnits)
       throw std::runtime_error("Tiles already enabled in PPS. This is not allowed.");
   }
 
+  if (nalUnits.size() == 1)
+    return *firstPPS;
+
   pic_parameter_set_rbsp pps = *firstPPS;
 
   pps.tiles_enabled_flag      = true;
@@ -88,13 +130,18 @@ void checkSlices(const NalUnitVector &nalUnits)
 {
   const auto firstSlice = dynamic_cast<slice_segment_layer_rbsp *>(nalUnits.at(0).rbsp.get());
 
+  int fileIndex = 0;
   for (const auto &nal : nalUnits)
   {
     const auto slice = dynamic_cast<slice_segment_layer_rbsp *>(nal.rbsp.get());
     if (slice->sliceSegmentHeader.slice_type != firstSlice->sliceSegmentHeader.slice_type)
       throw std::runtime_error("All slices must have the same slice_type.");
     if (slice->sliceSegmentHeader.PicOrderCntVal != firstSlice->sliceSegmentHeader.PicOrderCntVal)
-      throw std::runtime_error("All slices must have the same PicOrderCntVal.");
+      throw std::runtime_error(
+          "All slices must have the same PicOrderCntVal. First input file POC " +
+          std::to_string(firstSlice->sliceSegmentHeader.PicOrderCntVal) + " File " +
+          std::to_string(fileIndex) + " POC " +
+          std::to_string(slice->sliceSegmentHeader.PicOrderCntVal));
   }
 }
 
@@ -159,6 +206,7 @@ void Combiner::combineFiles()
       this->outputFile.writeNALUnit(data);
 
       this->activeWritingParameterSets.spsMap[newSPS.sps_seq_parameter_set_id] = newSPS;
+      this->CtbSizeY                                                           = newSPS.CtbSizeY;
 
       std::cout << "SPS -> New frame size " << newSPS.getFrameSize().toString() << "\n";
     }
@@ -194,6 +242,9 @@ void Combiner::combineFiles()
 
 void Combiner::writeOutSlices(const NalUnitVector &nalUnits)
 {
+  if (this->CtbSizeY != 16 && this->CtbSizeY != 32 && this->CtbSizeY != 64)
+    throw std::logic_error("Invalid CtbSizeY of " + std::to_string(this->CtbSizeY));
+
   for (size_t i = 0; i < nalUnits.size(); ++i)
   {
     const auto &nal         = nalUnits.at(i);
@@ -201,8 +252,8 @@ void Combiner::writeOutSlices(const NalUnitVector &nalUnits)
     auto        sliceHeader = slice->sliceSegmentHeader;
 
     sliceHeader.first_slice_segment_in_pic_flag = (i == 0);
-    const auto widthInCTU                       = (this->frameSize.width / 64);
-    const auto heightInCTU                      = (this->frameSize.height / 64);
+    const auto widthInCTU                       = (this->frameSize.width / this->CtbSizeY);
+    const auto heightInCTU                      = (this->frameSize.height / this->CtbSizeY);
     switch (i)
     {
     case 0:

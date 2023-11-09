@@ -10,9 +10,17 @@
 #include <filesystem>
 #include <iostream>
 
+void printHelp()
+{
+  std::cout << "BitstreamCombiner. Combine multiple HEVC input bitstreams into one\n";
+  std::cout << "that are laid out side by side or in a grid using Tiles.\n";
+  std::cout << "Usage:\n";
+  std::cout << "  BitstreamCombiner InputFile1.hevc InputFile2.hevc OutputFile.hevc\n";
+}
 struct Settings
 {
-  std::vector<std::filesystem::path> inputFiles;
+  std::vector<std::filesystem::path>   inputFiles;
+  std::optional<std::filesystem::path> outputFile;
 };
 
 Settings parseCommandLineArguments(int argc, char const *argv[])
@@ -20,6 +28,11 @@ Settings parseCommandLineArguments(int argc, char const *argv[])
   Settings settings;
   for (int i = 1; i < argc; ++i)
     settings.inputFiles.push_back(std::filesystem::path(argv[i]));
+  if (!settings.inputFiles.empty())
+  {
+    settings.outputFile = settings.inputFiles.back();
+    settings.inputFiles.pop_back();
+  }
   return settings;
 }
 
@@ -27,15 +40,18 @@ int main(int argc, char const *argv[])
 {
   const auto settings = parseCommandLineArguments(argc, argv);
 
-  if (settings.inputFiles.empty())
+  if (settings.inputFiles.empty() || !settings.outputFile)
   {
-    std::cout << "Please provide a list of input files to process.\n";
+    std::cout << "No inputs or output files provided.\n\n";
+    printHelp();
     return 1;
   }
 
-  if (settings.inputFiles.size() != 2 && settings.inputFiles.size() != 4)
+  if (settings.inputFiles.size() != 1 && settings.inputFiles.size() != 2 &&
+      settings.inputFiles.size() != 4)
   {
-    std::cout << "Currently only 2/4 input files are supported.\n";
+    std::cout << "Currently only 1/2/4 input files are supported.\n\n";
+    printHelp();
     return 1;
   }
 
@@ -51,9 +67,16 @@ int main(int argc, char const *argv[])
     fileSources.emplace_back(file);
   }
 
-  combiner::FileSinkAnnexB outputFile("combinedFile.hevc");
+  combiner::FileSinkAnnexB outputFile(settings.outputFile.value());
 
-  combiner::Combiner combiner(std::move(fileSources), std::move(outputFile));
+  try
+  {
+    combiner::Combiner combiner(std::move(fileSources), std::move(outputFile));
+  }
+  catch (const std::exception &e)
+  {
+    std::cerr << "Error during combination: " << e.what() << '\n';
+  }
 
   return 0;
 }
